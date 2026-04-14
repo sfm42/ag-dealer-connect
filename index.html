@@ -468,373 +468,530 @@ tr:last-child td { border-bottom: none; }
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
-const SUPABASE_URL = 'https://yrjotpgjljgksoyxhdzx.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlyam90cGdqbGpna3NveXhoZHp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMTMxMDYsImV4cCI6MjA5MTY4OTEwNn0.QRH3r2hqceQwiaIQyqdsQTcqzQyqsUYF1znmJDmu0FU'
-const CLOUD_NAME = 'dujmo9fbu'
-const CLOUD_PRESET = 'ag_dealer_connect'
-const RESEND_KEY = 're_egHBiKmF_8nUWPbHiojjJuwtTuY3MLwni'
+const SURL = 'https://yrjotpgjljgksoyxhdzx.supabase.co'
+const SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlyam90cGdqbGpna3NveXhoZHp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMTMxMDYsImV4cCI6MjA5MTY4OTEwNn0.QRH3r2hqceQwiaIQyqdsQTcqzQyqsUYF1znmJDmu0FU'
+const CLOUD = 'dujmo9fbu'
+const PRESET = 'ag_dealer_connect'
+const RESEND = 're_egHBiKmF_8nUWPbHiojjJuwtTuY3MLwni'
 const ADMIN_EMAIL = 'submitadmin@antiquegatherings.com'
+const sb = createClient(SURL, SKEY)
 
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+const APP = { user:null, profile:null, submissions:[], sellers:[], dealers:[], filter:'all', view:'photos', expanded:new Set(), viewing:null }
 
-const APP = {
-  user: null, profile: null, submissions: [], sellers: [], dealers: [],
-  activeFilter: 'all', activeView: 'photos', expandedSellers: new Set(), viewingSubmission: null
+// utils
+function ini(n){return n?n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase():'?'}
+function bg(s){const p=['#EEEDFE','#E1F5EE','#E6F1FB','#FAEEDA','#FBEAF0','#EAF3DE'];let h=0;for(let c of s)h=c.charCodeAt(0)+((h<<5)-h);return p[Math.abs(h)%p.length]}
+function fg(s){const p=['#3C3489','#0F6E56','#185FA5','#854F0B','#993556','#3B6D11'];let h=0;for(let c of s)h=c.charCodeAt(0)+((h<<5)-h);return p[Math.abs(h)%p.length]}
+function ago(ts){const d=Date.now()-new Date(ts).getTime(),mi=Math.floor(d/60000),h=Math.floor(d/3600000),dy=Math.floor(d/86400000);if(dy>0)return dy===1?'1 day ago':dy+' days ago';if(h>0)return h===1?'1 hour ago':h+' hours ago';if(mi>0)return mi+' mins ago';return 'Just now'}
+
+function av(el,u){
+  if(!el)return
+  if(u&&u.avatar_url){el.innerHTML=`<img src="${u.avatar_url}" alt="${u.name}">`; el.style.background='transparent'}
+  else{el.style.background=u?bg(u.id):'#EEEDFE'; el.style.color=u?fg(u.id):'#3C3489'; el.innerHTML=u?ini(u.name):'?'}
 }
 
-function initials(n){return n?n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase():'?';}
-function sc(s){const p=['#EEEDFE','#E1F5EE','#E6F1FB','#FAEEDA','#FBEAF0','#EAF3DE'];let h=0;for(let c of s)h=c.charCodeAt(0)+((h<<5)-h);return p[Math.abs(h)%p.length];}
-function scd(s){const p=['#3C3489','#0F6E56','#185FA5','#854F0B','#993556','#3B6D11'];let h=0;for(let c of s)h=c.charCodeAt(0)+((h<<5)-h);return p[Math.abs(h)%p.length];}
-function timeAgo(ts){const diff=Date.now()-new Date(ts).getTime(),m=Math.floor(diff/60000),h=Math.floor(diff/3600000),d=Math.floor(diff/86400000);if(d>0)return d===1?'1 day ago':d+' days ago';if(h>0)return h===1?'1 hour ago':h+' hours ago';if(m>0)return m===1?'1 min ago':m+' mins ago';return 'Just now';}
+function el(id){return document.getElementById(id)}
+function showErr(id,msg){const e=el(id);if(e){e.textContent=msg;e.style.display='block'}}
+function hideErr(id){const e=el(id);if(e)e.style.display='none'}
+function setBtn(id,on,label){const b=el(id);if(!b)return;b.disabled=on;b.innerHTML=on?'<span class="spinner"></span>Working...':(label||b.textContent)}
 
-function renderAvatar(el,user){
-  if(!el)return;
-  if(user&&user.avatar_url){el.innerHTML='<img src="'+user.avatar_url+'" alt="'+user.name+'">';el.style.background='transparent';}
-  else{el.style.background=user?sc(user.id):'#EEEDFE';el.style.color=user?scd(user.id):'#3C3489';el.innerHTML=user?initials(user.name):'?';}
+// expose to global
+window.showScreen = function(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'))
+  el(id).classList.add('active')
+  window.scrollTo(0,0)
+}
+window.toast = function(msg){
+  const t=el('toast');t.textContent=msg;t.classList.add('show')
+  setTimeout(()=>t.classList.remove('show'),2500)
+}
+window.switchSignupType = function(type){
+  el('signup-seller').style.display=type==='seller'?'block':'none'
+  el('signup-dealer').style.display=type==='dealer'?'block':'none'
+  el('tab-seller').classList.toggle('active',type==='seller')
+  el('tab-dealer').classList.toggle('active',type==='dealer')
 }
 
-window.showScreen=function(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
-window.toast=function(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
-function showError(id,msg){const el=document.getElementById(id);if(el){el.textContent=msg;el.style.display='block';}}
-function hideError(id){const el=document.getElementById(id);if(el)el.style.display='none';}
-function setBtn(id,loading,label){const b=document.getElementById(id);if(!b)return;b.disabled=loading;b.innerHTML=loading?'<span class="spinner"></span>Working...':(label||b.textContent);}
-
-window.switchSignupType=function(type){
-  document.getElementById('signup-seller').style.display=type==='seller'?'block':'none';
-  document.getElementById('signup-dealer').style.display=type==='dealer'?'block':'none';
-  document.getElementById('tab-seller').classList.toggle('active',type==='seller');
-  document.getElementById('tab-dealer').classList.toggle('active',type==='dealer');
-}
-
-window.doLogin=async function(){
-  hideError('login-error');
-  const email=document.getElementById('login-email').value.trim();
-  const pass=document.getElementById('login-pass').value;
-  if(!email||!pass){showError('login-error','Please enter your email and password.');return;}
-  setBtn('login-btn',true);
+// auth
+window.doLogin = async function(){
+  hideErr('login-error')
+  const email=el('login-email').value.trim()
+  const pass=el('login-pass').value
+  if(!email||!pass){showErr('login-error','Please enter your email and password.');return}
+  setBtn('login-btn',true)
   try{
-    const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
-    if(error)throw error;
-    await loadUserAndRoute(data.user);
-  }catch(err){showError('login-error',err.message||'Login failed.');}
-  finally{setBtn('login-btn',false,'Log in');}
+    const{data,error}=await sb.auth.signInWithPassword({email,password:pass})
+    if(error)throw error
+    await route(data.user)
+  }catch(e){showErr('login-error',e.message||'Login failed.')}
+  finally{setBtn('login-btn',false,'Log in')}
 }
 
-window.doSignup=async function(){
-  hideError('signup-error');
-  const isD=document.getElementById('signup-dealer').style.display!=='none';
-  let email,pass,profileData,avatarFile;
+window.doSignup = async function(){
+  hideErr('signup-error')
+  const isD=el('signup-dealer').style.display!=='none'
+  let email,pass,prof,avatarFile
   if(!isD){
-    const fn=document.getElementById('s-fname').value.trim();
-    email=document.getElementById('s-email').value.trim();pass=document.getElementById('s-pass').value;
-    if(!fn||!email||!pass){showError('signup-error','Please fill in all required fields.');return;}
-    avatarFile=document.getElementById('s-avatar-input').files[0]||null;
-    profileData={type:'seller',name:fn+' '+document.getElementById('s-lname').value.trim(),phone:document.getElementById('s-phone').value,address:document.getElementById('s-addr').value,notes:document.getElementById('s-notes').value};
+    const fn=el('s-fname').value.trim()
+    email=el('s-email').value.trim(); pass=el('s-pass').value
+    if(!fn||!email||!pass){showErr('signup-error','Please fill in all required fields.');return}
+    avatarFile=el('s-avatar-input').files[0]||null
+    prof={type:'seller',name:fn+' '+el('s-lname').value.trim(),phone:el('s-phone').value,address:el('s-addr').value,notes:el('s-notes').value}
   }else{
-    const fn=document.getElementById('d-fname').value.trim();
-    email=document.getElementById('d-email').value.trim();pass=document.getElementById('d-pass').value;
-    if(!fn||!email||!pass){showError('signup-error','Please fill in all required fields.');return;}
-    avatarFile=document.getElementById('d-avatar-input').files[0]||null;
-    profileData={type:'dealer',dealer_status:'pending',name:fn+' '+document.getElementById('d-lname').value.trim(),business_name:document.getElementById('d-biz').value,phone:document.getElementById('d-phone').value,address:document.getElementById('d-addr').value,dealer_number:document.getElementById('d-dealnum').value,store_location:document.getElementById('d-store').value};
+    const fn=el('d-fname').value.trim()
+    email=el('d-email').value.trim(); pass=el('d-pass').value
+    if(!fn||!email||!pass){showErr('signup-error','Please fill in all required fields.');return}
+    avatarFile=el('d-avatar-input').files[0]||null
+    prof={type:'dealer',dealer_status:'pending',name:fn+' '+el('d-lname').value.trim(),business_name:el('d-biz').value,phone:el('d-phone').value,address:el('d-addr').value,dealer_number:el('d-dealnum').value,store_location:el('d-store').value}
   }
-  setBtn('signup-btn',true);
+  setBtn('signup-btn',true)
   try{
-    const{data,error}=await sb.auth.signUp({email,password:pass});
-    if(error)throw error;
-    let avatarUrl=null;
-    if(avatarFile){try{const up=await uploadImage(avatarFile,'avatars');avatarUrl=up.url;}catch(e){console.warn('Avatar upload failed',e);}}
-    const{error:pe}=await sb.from('profiles').insert({id:data.user.id,...profileData,avatar_url:avatarUrl});
-    if(pe)throw pe;
-    if(profileData.type==='dealer'){try{await sendEmail(ADMIN_EMAIL,'New dealer application: '+profileData.name,'<p>New application from <strong>'+profileData.name+'</strong>. <a href="https://submit.antiquegatherings.com">Review in admin portal.</a></p>');}catch(e){}}
-    toast('Account created!');
-    await loadUserAndRoute(data.user);
-  }catch(err){showError('signup-error',err.message||'Signup failed.');}
-  finally{setBtn('signup-btn',false,'Create account');}
+    const{data,error}=await sb.auth.signUp({email,password:pass})
+    if(error)throw error
+    let avatarUrl=null
+    if(avatarFile){try{const r=await uploadImg(avatarFile,'avatars');avatarUrl=r.url}catch(e){console.warn('avatar fail',e)}}
+    const{error:pe}=await sb.from('profiles').insert({id:data.user.id,...prof,avatar_url:avatarUrl})
+    if(pe)throw pe
+    if(prof.type==='dealer'){try{await mail(ADMIN_EMAIL,'New dealer application: '+prof.name,`<p>New dealer application from <strong>${prof.name}</strong>. <a href="https://ag-dealer-connect.vercel.app">Review in admin portal.</a></p>`)}catch(e){}}
+    window.toast('Account created! Welcome.')
+    await route(data.user)
+  }catch(e){showErr('signup-error',e.message||'Signup failed.')}
+  finally{setBtn('signup-btn',false,'Create account')}
 }
 
-window.logout=async function(){await sb.auth.signOut();APP.user=null;APP.profile=null;showScreen('screen-home');}
-
-async function loadUserAndRoute(user){
-  APP.user=user;
-  const{data,error}=await sb.from('profiles').select('*').eq('id',user.id).single();
-  if(error||!data){toast('Profile not found.');return;}
-  APP.profile=data;
-  if(data.type==='admin'){await loadAdmin();showScreen('screen-admin');}
-  else if(data.type==='seller'){await loadSellerDash();showScreen('screen-seller');}
-  else{await loadDealerDash();showScreen('screen-dealer');}
+window.logout = async function(){
+  await sb.auth.signOut()
+  APP.user=null; APP.profile=null
+  window.showScreen('screen-home')
 }
 
-async function uploadImage(file,folder='submissions'){
-  const fd=new FormData();fd.append('file',file);fd.append('upload_preset',CLOUD_PRESET);fd.append('folder',folder);
-  const res=await fetch('https://api.cloudinary.com/v1_1/'+CLOUD_NAME+'/image/upload',{method:'POST',body:fd});
-  if(!res.ok)throw new Error('Upload failed');
-  const d=await res.json();return{url:d.secure_url,publicId:d.public_id};
+async function route(user){
+  APP.user=user
+  const{data,error}=await sb.from('profiles').select('*').eq('id',user.id).single()
+  if(error||!data){window.toast('Profile not found.');return}
+  APP.profile=data
+  if(data.type==='admin'){await loadAdmin();window.showScreen('screen-admin')}
+  else if(data.type==='seller'){await loadSeller();window.showScreen('screen-seller')}
+  else{await loadDealer();window.showScreen('screen-dealer')}
 }
 
-async function sendEmail(to,subject,html){
-  try{await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Authorization':'Bearer '+RESEND_KEY,'Content-Type':'application/json'},body:JSON.stringify({from:'AG Dealer Connect <noreply@antiquegatherings.com>',to,subject,html})});}catch(e){console.warn('Email error',e);}
+// cloudinary
+async function uploadImg(file,folder='submissions'){
+  const fd=new FormData()
+  fd.append('file',file); fd.append('upload_preset',PRESET); fd.append('folder',folder)
+  const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,{method:'POST',body:fd})
+  if(!r.ok)throw new Error('Upload failed')
+  const d=await r.json()
+  return{url:d.secure_url,publicId:d.public_id}
 }
 
-window.previewAvatar=function(pid,input){
-  if(!input.files||!input.files[0])return;
-  const r=new FileReader();r.onload=e=>{document.getElementById(pid).innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';};r.readAsDataURL(input.files[0]);
-}
-
-window.updateAvatar=async function(input,role){
-  if(!input.files||!input.files[0])return;toast('Uploading...');
+// resend
+async function mail(to,subject,html){
   try{
-    const{url}=await uploadImage(input.files[0],'avatars');
-    await sb.from('profiles').update({avatar_url:url}).eq('id',APP.profile.id);
-    APP.profile.avatar_url=url;
-    if(role==='seller'){renderAvatar(document.getElementById('seller-avatar-large'),APP.profile);renderAvatar(document.getElementById('nav-seller-avatar'),APP.profile);}
-    else{renderAvatar(document.getElementById('dealer-avatar-large'),APP.profile);renderAvatar(document.getElementById('nav-dealer-avatar'),APP.profile);}
-    toast('Profile photo updated!');
-  }catch(e){toast('Upload failed.');}
+    await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Authorization':'Bearer '+RESEND,'Content-Type':'application/json'},body:JSON.stringify({from:'AG Dealer Connect <noreply@antiquegatherings.com>',to,subject,html})})
+  }catch(e){console.warn('mail error',e)}
 }
 
-async function loadSellerDash(){
-  document.getElementById('seller-banner-name').textContent=APP.profile.name;
-  document.getElementById('seller-banner-sub').textContent=APP.user.email;
-  renderAvatar(document.getElementById('seller-avatar-large'),APP.profile);
-  renderAvatar(document.getElementById('nav-seller-avatar'),APP.profile);
-  await refreshSellerSubmissions();
+// avatar preview
+window.previewAvatar = function(pid,input){
+  if(!input.files||!input.files[0])return
+  const r=new FileReader()
+  r.onload=e=>{el(pid).innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`}
+  r.readAsDataURL(input.files[0])
 }
 
-async function refreshSellerSubmissions(){
-  const{data}=await sb.from('submissions').select('*').eq('seller_id',APP.profile.id).order('created_at',{ascending:false});
-  APP.submissions=data||[];renderSellerPhotos();
+window.updateAvatar = async function(input,role){
+  if(!input.files||!input.files[0])return
+  window.toast('Uploading...')
+  try{
+    const{url}=await uploadImg(input.files[0],'avatars')
+    await sb.from('profiles').update({avatar_url:url}).eq('id',APP.profile.id)
+    APP.profile.avatar_url=url
+    if(role==='seller'){av(el('seller-avatar-large'),APP.profile);av(el('nav-seller-avatar'),APP.profile)}
+    else{av(el('dealer-avatar-large'),APP.profile);av(el('nav-dealer-avatar'),APP.profile)}
+    window.toast('Profile photo updated!')
+  }catch(e){window.toast('Upload failed.')}
 }
 
-function renderSellerPhotos(){
-  const grid=document.getElementById('seller-photos-grid');
-  document.getElementById('photos-count').textContent='My submissions ('+APP.submissions.length+')';
-  document.getElementById('delete-all-btn').style.display=APP.submissions.length?'inline-flex':'none';
-  if(!APP.submissions.length){grid.innerHTML='<div class="empty-state">No submissions yet.</div>';return;}
-  grid.innerHTML=APP.submissions.map(p=>{
-    const img=p.image_url?`<img src="${p.image_url}" alt="item">`:'📷';
-    return `<div class="photo-card">
+// ---- SELLER ----
+async function loadSeller(){
+  el('seller-banner-name').textContent=APP.profile.name
+  el('seller-banner-sub').textContent=APP.user.email
+  av(el('seller-avatar-large'),APP.profile)
+  av(el('nav-seller-avatar'),APP.profile)
+  await refreshSubs()
+}
+
+async function refreshSubs(){
+  const{data}=await sb.from('submissions').select('*').eq('seller_id',APP.profile.id).order('created_at',{ascending:false})
+  APP.submissions=data||[]
+  renderSeller()
+}
+
+function renderSeller(){
+  const grid=el('seller-photos-grid')
+  el('photos-count').textContent=`My submissions (${APP.submissions.length})`
+  el('delete-all-btn').style.display=APP.submissions.length?'inline-flex':'none'
+  if(!APP.submissions.length){grid.innerHTML='<div class="empty-state">No submissions yet — upload your first item above.</div>';return}
+  grid.innerHTML=''
+  APP.submissions.forEach(p=>{
+    const card=document.createElement('div')
+    card.className='photo-card'
+    const img=p.image_url?`<img src="${p.image_url}" alt="item">`:'📷'
+    card.innerHTML=`
       <div class="photo-ph" style="background:#f5f5f3;">${img}</div>
       <div class="photo-body">
-        <input type="text" placeholder="Asking price" value="${p.price||''}" data-id="${p.id}" data-field="price" class="photo-price-input">
-        <textarea placeholder="Describe the item..." data-id="${p.id}" data-field="description" class="photo-desc-input">${p.description||''}</textarea>
-        <div class="photo-actions"><button class="btn danger sm" data-id="${p.id}" class="delete-photo-btn">Delete</button></div>
-      </div>
-    </div>`;
-  }).join('');
-  grid.querySelectorAll('.photo-price-input,.photo-desc-input').forEach(el=>{
-    el.addEventListener('change',()=>savePhoto(el.dataset.id,el.dataset.field,el.value));
-  });
-  grid.querySelectorAll('.delete-photo-btn').forEach(el=>{
-    el.addEventListener('click',()=>deletePhoto(el.dataset.id));
-  });
+        <input type="text" class="price-in" placeholder="Asking price (e.g. $50)" value="${p.price||''}">
+        <textarea class="desc-in" placeholder="Describe the item...">${p.description||''}</textarea>
+        <div class="photo-actions"><button class="btn danger sm del-btn">Delete</button></div>
+      </div>`
+    card.querySelector('.price-in').addEventListener('change',async e=>{
+      await sb.from('submissions').update({price:e.target.value}).eq('id',p.id)
+      p.price=e.target.value
+    })
+    card.querySelector('.desc-in').addEventListener('change',async e=>{
+      await sb.from('submissions').update({description:e.target.value}).eq('id',p.id)
+      p.description=e.target.value
+    })
+    card.querySelector('.del-btn').addEventListener('click',()=>delPhoto(p.id))
+    grid.appendChild(card)
+  })
 }
 
-window.savePhoto=async function(id,field,val){await sb.from('submissions').update({[field]:val}).eq('id',id);const p=APP.submissions.find(s=>s.id===id);if(p)p[field]=val;}
+async function delPhoto(id){
+  if(!confirm('Delete this submission?'))return
+  await sb.from('submissions').delete().eq('id',id)
+  APP.submissions=APP.submissions.filter(p=>p.id!==id)
+  renderSeller()
+  window.toast('Deleted.')
+}
 
-window.handleFileUpload=async function(e){
-  const files=Array.from(e.target.files);if(!files.length)return;
-  document.getElementById('upload-progress-wrap').style.display='block';
-  let done=0;
+window.deleteAllPhotos = async function(){
+  if(!confirm('Delete all submissions? This cannot be undone.'))return
+  await sb.from('submissions').delete().eq('seller_id',APP.profile.id)
+  APP.submissions=[]
+  renderSeller()
+  window.toast('All submissions deleted.')
+}
+
+window.handleFileUpload = async function(e){
+  const files=Array.from(e.target.files)
+  if(!files.length)return
+  el('upload-progress-wrap').style.display='block'
+  let done=0
   for(const file of files){
-    document.getElementById('upload-status').textContent='Uploading '+(done+1)+' of '+files.length+'...';
-    document.getElementById('progress-bar').style.width=Math.round((done/files.length)*100)+'%';
+    el('upload-status').textContent=`Uploading ${done+1} of ${files.length}...`
+    el('progress-bar').style.width=Math.round((done/files.length)*100)+'%'
     try{
-      const{url,publicId}=await uploadImage(file,'submissions');
-      const{data}=await sb.from('submissions').insert({seller_id:APP.profile.id,image_url:url,image_public_id:publicId,is_new:true}).select().single();
-      if(data)APP.submissions.unshift(data);
-    }catch(err){toast('Failed to upload '+file.name);}
-    done++;
+      const{url,publicId}=await uploadImg(file,'submissions')
+      const{data}=await sb.from('submissions').insert({seller_id:APP.profile.id,image_url:url,image_public_id:publicId,is_new:true}).select().single()
+      if(data)APP.submissions.unshift(data)
+    }catch(err){window.toast('Failed to upload '+file.name)}
+    done++
   }
-  document.getElementById('progress-bar').style.width='100%';
-  document.getElementById('upload-status').textContent='Done!';
-  setTimeout(()=>{document.getElementById('upload-progress-wrap').style.display='none';document.getElementById('progress-bar').style.width='0';},1500);
-  try{await sendEmail(ADMIN_EMAIL,'New submissions from '+APP.profile.name,'<p>'+files.length+' new item(s) from '+APP.profile.name+'. <a href="https://submit.antiquegatherings.com">View in admin portal.</a></p>');}catch(e){}
-  e.target.value='';renderSellerPhotos();toast(files.length+' item'+(files.length>1?'s':'')+' submitted!');
+  el('progress-bar').style.width='100%'
+  el('upload-status').textContent='Done!'
+  setTimeout(()=>{el('upload-progress-wrap').style.display='none';el('progress-bar').style.width='0'},1500)
+  try{await mail(ADMIN_EMAIL,`New submissions from ${APP.profile.name}`,`<p>${files.length} new item(s) from ${APP.profile.name}. <a href="https://ag-dealer-connect.vercel.app">View in admin portal.</a></p>`)}catch(err){}
+  e.target.value=''
+  renderSeller()
+  window.toast(`${files.length} item${files.length>1?'s':''} submitted!`)
 }
 
-window.deletePhoto=async function(id){
-  if(!confirm('Delete this submission?'))return;
-  await sb.from('submissions').delete().eq('id',id);
-  APP.submissions=APP.submissions.filter(p=>p.id!==id);renderSellerPhotos();toast('Deleted.');
+// drag and drop
+const zone=el('upload-zone')
+if(zone){
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('dragging')})
+  zone.addEventListener('dragleave',()=>zone.classList.remove('dragging'))
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('dragging');if(e.dataTransfer.files.length)window.handleFileUpload({target:{files:e.dataTransfer.files,value:''}})})
 }
 
-window.deleteAllPhotos=async function(){
-  if(!confirm('Delete all submissions? This cannot be undone.'))return;
-  await sb.from('submissions').delete().eq('seller_id',APP.profile.id);
-  APP.submissions=[];renderSellerPhotos();toast('All submissions deleted.');
-}
-
-const zone=document.getElementById('upload-zone');
-if(zone){zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('dragging');});zone.addEventListener('dragleave',()=>zone.classList.remove('dragging'));zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('dragging');if(e.dataTransfer.files.length)handleFileUpload({target:{files:e.dataTransfer.files,value:''}});});}
-
-async function loadDealerDash(){
-  document.getElementById('dealer-banner-name').textContent=APP.profile.name;
-  document.getElementById('dealer-banner-sub').textContent=APP.profile.business_name?APP.profile.business_name+' · '+(APP.profile.store_location||''):APP.user.email;
-  renderAvatar(document.getElementById('dealer-avatar-large'),APP.profile);
-  renderAvatar(document.getElementById('nav-dealer-avatar'),APP.profile);
+// ---- DEALER ----
+async function loadDealer(){
+  el('dealer-banner-name').textContent=APP.profile.name
+  el('dealer-banner-sub').textContent=APP.profile.business_name?`${APP.profile.business_name} · ${APP.profile.store_location||''}`  :APP.user.email
+  av(el('dealer-avatar-large'),APP.profile)
+  av(el('nav-dealer-avatar'),APP.profile)
   if(APP.profile.dealer_status!=='approved'){
-    document.getElementById('dealer-pending-wrap').style.display='block';
-    document.getElementById('dealer-active-wrap').style.display='none';
+    el('dealer-pending-wrap').style.display='block'
+    el('dealer-active-wrap').style.display='none'
   }else{
-    document.getElementById('dealer-pending-wrap').style.display='none';
-    document.getElementById('dealer-active-wrap').style.display='block';
-    await loadDealerData();dealerViewTab('photos');
+    el('dealer-pending-wrap').style.display='none'
+    el('dealer-active-wrap').style.display='block'
+    await loadDealerData()
+    window.dealerViewTab('photos')
   }
 }
 
 async function loadDealerData(){
-  const[subs,sellers]=await Promise.all([
+  const[s,sel]=await Promise.all([
     sb.from('submissions').select('*, profiles:seller_id(id,name,phone,address,notes,avatar_url)').order('created_at',{ascending:false}),
     sb.from('profiles').select('*').eq('type','seller').order('created_at',{ascending:false})
-  ]);
-  APP.submissions=subs.data||[];APP.sellers=sellers.data||[];
+  ])
+  APP.submissions=s.data||[]
+  APP.sellers=sel.data||[]
 }
 
-window.dealerViewTab=function(tab){
-  APP.activeView=tab;
-  document.getElementById('dvt-photos').classList.toggle('active',tab==='photos');
-  document.getElementById('dvt-sellers').classList.toggle('active',tab==='sellers');
-  document.getElementById('dv-photos').classList.toggle('active',tab==='photos');
-  document.getElementById('dv-sellers').classList.toggle('active',tab==='sellers');
-  if(tab==='photos')renderDealerPhotos();else renderSellersList();
+window.dealerViewTab = function(tab){
+  APP.view=tab
+  el('dvt-photos').classList.toggle('active',tab==='photos')
+  el('dvt-sellers').classList.toggle('active',tab==='sellers')
+  el('dv-photos').classList.toggle('active',tab==='photos')
+  el('dv-sellers').classList.toggle('active',tab==='sellers')
+  if(tab==='photos')renderDealerPhotos()
+  else renderSellersList()
 }
 
-window.photosFilter=function(f){
-  APP.activeFilter=f;
-  document.getElementById('pill-all').classList.toggle('active',f==='all');
-  document.getElementById('pill-new').classList.toggle('active',f==='new');
-  renderDealerPhotos();
+window.photosFilter = function(f){
+  APP.filter=f
+  el('pill-all').classList.toggle('active',f==='all')
+  el('pill-new').classList.toggle('active',f==='new')
+  renderDealerPhotos()
 }
 
 function renderDealerPhotos(){
-  let ph=APP.activeFilter==='new'?APP.submissions.filter(p=>p.is_new):APP.submissions;
-  const grid=document.getElementById('dealer-photos-grid');
-  document.getElementById('photos-view-count').textContent=(APP.activeFilter==='new'?ph.length+' new submission'+(ph.length!==1?'s',''):APP.submissions.length+' submission'+(APP.submissions.length!==1?'s':'')+' · newest first');
-  if(!ph.length){grid.innerHTML='<div class="empty-state">No submissions found.</div>';return;}
-  grid.innerHTML=ph.map(p=>{
-    const s=p.profiles;
-    const av=s&&s.avatar_url?'<img src="'+s.avatar_url+'" style="width:20px;height:20px;border-radius:50%;object-fit:cover;">':'<div style="width:20px;height:20px;border-radius:50%;background:'+sc(s?s.id:'x')+';display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:'+scd(s?s.id:'x')+'">'+(s?initials(s.name):'?')+'</div>';
-    return '<div class="dealer-photo-card" onclick="openPhotoModal(''+p.id+'')"><div class="photo-ph">'+(p.image_url?'<img src="'+p.image_url+'" alt="item">':'📷')+'</div><div class="card-footer"><div class="price">'+(p.price||'Price TBD')+(p.is_new?' <span class="new-badge">NEW</span>':'<span class="time-badge">'+timeAgo(p.created_at)+'</span>')+'</div><div class="desc">'+(p.description||'No description')+'</div><div class="seller-row">'+av+'<span class="seller-tag">'+(s?s.name:'Unknown')+'</span></div></div></div>';
-  }).join('');
+  const ph=APP.filter==='new'?APP.submissions.filter(p=>p.is_new):APP.submissions
+  const grid=el('dealer-photos-grid')
+  el('photos-view-count').textContent=APP.filter==='new'?`${ph.length} new submission${ph.length!==1?'s',''}`:`${APP.submissions.length} submission${APP.submissions.length!==1?'s':''} · newest first`
+  if(!ph.length){grid.innerHTML='<div class="empty-state">No submissions found.</div>';return}
+  grid.innerHTML=''
+  ph.forEach(p=>{
+    const s=p.profiles
+    const card=document.createElement('div')
+    card.className='dealer-photo-card'
+    const img=p.image_url?`<img src="${p.image_url}" alt="item">`:'📷'
+    const avHtml=s&&s.avatar_url?`<img src="${s.avatar_url}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;">`:`<div style="width:20px;height:20px;border-radius:50%;background:${bg(s?s.id:'x')};display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:${fg(s?s.id:'x')}">${s?ini(s.name):'?'}</div>`
+    const newBadge=p.is_new?'<span class="new-badge">NEW</span>':''
+    const timeBadge=p.is_new?'':`<span class="time-badge">${ago(p.created_at)}</span>`
+    card.innerHTML=`
+      <div class="photo-ph">${img}</div>
+      <div class="card-footer">
+        <div class="price">${p.price||'Price TBD'}${newBadge}${timeBadge}</div>
+        <div class="desc">${p.description||'No description'}</div>
+        <div class="seller-row">${avHtml}<span class="seller-tag">${s?s.name:'Unknown'}</span></div>
+      </div>`
+    card.addEventListener('click',()=>openModal(p.id))
+    grid.appendChild(card)
+  })
 }
 
 function renderSellersList(){
-  const withSubs=APP.sellers.map(s=>{const subs=APP.submissions.filter(p=>p.profiles&&p.profiles.id===s.id);const latest=subs.length>0?subs[0].created_at:s.created_at;return{seller:s,subs,latest};}).sort((a,b)=>new Date(b.latest)-new Date(a.latest));
-  const list=document.getElementById('sellers-list');
-  if(!withSubs.length){list.innerHTML='<div class="empty-state">No sellers yet.</div>';return;}
-  list.innerHTML=withSubs.map(({seller:s,subs,latest})=>{
-    const avEl=s.avatar_url?'<img src="'+s.avatar_url+'" style="width:52px;height:52px;object-fit:cover;border-radius:50%;">':'<span style="font-size:18px;font-weight:500;color:'+scd(s.id)+'">'+initials(s.name)+'</span>';
-    const isExp=APP.expandedSellers.has(s.id);
-    const hasNew=subs.some(p=>p.is_new);
-    const strip=subs.map(p=>'<div class="strip-item" onclick="openPhotoModal(''+p.id+'',event)"><div class="s-ph">'+(p.image_url?'<img src="'+p.image_url+'" alt="item" style="width:100%;height:100%;object-fit:cover;">':'📷')+'</div><div class="s-info"><div class="s-price">'+(p.price||'TBD')+'</div><div class="s-desc">'+(p.description||'No description')+'</div><div style="font-size:10px;color:#bbb;margin-top:2px;">'+timeAgo(p.created_at)+'</div></div></div>').join('');
-    const city=s.address?s.address.split(',').filter((_,i)=>i>0).join(',').trim():'';
-    return '<div class="seller-card"><div class="seller-card-header" onclick="toggleSeller(''+s.id+'')"><div class="avatar avatar-md" style="background:'+sc(s.id)+';color:'+scd(s.id)+';">'+avEl+'</div><div class="seller-card-meta"><h3>'+s.name+'</h3><p>'+(s.phone||'')+(city?' &bull; '+city:'')+'</p><p class="joined">Last active '+timeAgo(latest)+'</p></div><div class="seller-card-right">'+(hasNew?'<span class="latest-badge">New items</span>':'')+'<span class="photo-count-badge">'+subs.length+' item'+(subs.length!==1?'s':'')+'</span><span class="chevron'+(isExp?' open':'')+'" id="ch-'+s.id+'">&#8250;</span></div></div><div class="seller-photos-strip'+(isExp?' open':'')+'" id="st-'+s.id+'"><div class="strip-grid">'+strip+'</div></div></div>';
-  }).join('');
+  const withSubs=APP.sellers.map(s=>{
+    const subs=APP.submissions.filter(p=>p.profiles&&p.profiles.id===s.id)
+    const latest=subs.length>0?subs[0].created_at:s.created_at
+    return{s,subs,latest}
+  }).sort((a,b)=>new Date(b.latest)-new Date(a.latest))
+  const list=el('sellers-list')
+  if(!withSubs.length){list.innerHTML='<div class="empty-state">No sellers yet.</div>';return}
+  list.innerHTML=''
+  withSubs.forEach(({s,subs,latest})=>{
+    const card=document.createElement('div')
+    card.className='seller-card'
+    const isExp=APP.expanded.has(s.id)
+    const hasNew=subs.some(p=>p.is_new)
+    const city=s.address?s.address.split(',').filter((_,i)=>i>0).join(',').trim():''
+    const avEl=s.avatar_url?`<img src="${s.avatar_url}" style="width:52px;height:52px;object-fit:cover;border-radius:50%;">`:`<span style="font-size:18px;font-weight:500;color:${fg(s.id)}">${ini(s.name)}</span>`
+    card.innerHTML=`
+      <div class="seller-card-header">
+        <div class="avatar avatar-md" style="background:${bg(s.id)};color:${fg(s.id)};">${avEl}</div>
+        <div class="seller-card-meta">
+          <h3>${s.name}</h3>
+          <p>${s.phone||''}${city?' &bull; '+city:''}</p>
+          <p class="joined">Last active ${ago(latest)}</p>
+        </div>
+        <div class="seller-card-right">
+          ${hasNew?'<span class="latest-badge">New items</span>':''}
+          <span class="photo-count-badge">${subs.length} item${subs.length!==1?'s':''}</span>
+          <span class="chevron${isExp?' open':''}">&#8250;</span>
+        </div>
+      </div>
+      <div class="seller-photos-strip${isExp?' open':''}"></div>`
+    card.querySelector('.seller-card-header').addEventListener('click',()=>{
+      if(APP.expanded.has(s.id))APP.expanded.delete(s.id)
+      else APP.expanded.add(s.id)
+      renderSellersList()
+    })
+    if(isExp){
+      const strip=card.querySelector('.seller-photos-strip')
+      const sgrid=document.createElement('div')
+      sgrid.className='strip-grid'
+      subs.forEach(p=>{
+        const item=document.createElement('div')
+        item.className='strip-item'
+        const img=p.image_url?`<img src="${p.image_url}" alt="item" style="width:100%;height:100%;object-fit:cover;">`:'📷'
+        item.innerHTML=`
+          <div class="s-ph">${img}</div>
+          <div class="s-info">
+            <div class="s-price">${p.price||'TBD'}</div>
+            <div class="s-desc">${p.description||'No description'}</div>
+            <div style="font-size:10px;color:#bbb;margin-top:2px;">${ago(p.created_at)}</div>
+          </div>`
+        item.addEventListener('click',e=>{e.stopPropagation();openModal(p.id)})
+        sgrid.appendChild(item)
+      })
+      strip.appendChild(sgrid)
+    }
+    list.appendChild(card)
+  })
 }
 
-window.toggleSeller=function(id){if(APP.expandedSellers.has(id))APP.expandedSellers.delete(id);else APP.expandedSellers.add(id);renderSellersList();}
-
-window.openPhotoModal=function(pid,e){
-  if(e)e.stopPropagation();
-  const p=APP.submissions.find(s=>s.id===pid);if(!p)return;
-  const s=p.profiles||APP.sellers.find(u=>u.id===p.seller_id);
-  APP.viewingSubmission=p;
-  document.getElementById('modal-price').textContent=p.price||'—';
-  document.getElementById('modal-desc').textContent=p.description||'No description.';
-  document.getElementById('modal-seller-name').textContent=s?s.name:'—';
-  document.getElementById('modal-seller-phone').textContent=s?s.phone:'—';
-  document.getElementById('modal-seller-addr').textContent=s?s.address:'—';
-  document.getElementById('modal-seller-notes').textContent=s?(s.notes||'None'):'—';
-  document.getElementById('modal-seller-location').textContent=s&&s.address?s.address.split(',').slice(1).join(',').trim():'—';
-  const imgWrap=document.getElementById('modal-img-wrap');
-  imgWrap.innerHTML=p.image_url?'<img src="'+p.image_url+'" alt="item">':'<div class="photo-ph">📷</div>';
-  renderAvatar(document.getElementById('modal-seller-avatar'),s);
-  document.getElementById('photo-modal').classList.add('open');
+// modal
+function openModal(pid){
+  const p=APP.submissions.find(s=>s.id===pid)
+  if(!p)return
+  const s=p.profiles||APP.sellers.find(u=>u.id===p.seller_id)
+  APP.viewing=p
+  el('modal-price').textContent=p.price||'—'
+  el('modal-desc').textContent=p.description||'No description provided.'
+  el('modal-seller-name').textContent=s?s.name:'—'
+  el('modal-seller-phone').textContent=s?s.phone:'—'
+  el('modal-seller-addr').textContent=s?s.address:'—'
+  el('modal-seller-notes').textContent=s?(s.notes||'None'):'—'
+  el('modal-seller-location').textContent=s&&s.address?s.address.split(',').slice(1).join(',').trim():'—'
+  const imgWrap=el('modal-img-wrap')
+  imgWrap.innerHTML=p.image_url?`<img src="${p.image_url}" alt="item">`:'<div class="photo-ph">📷</div>'
+  av(el('modal-seller-avatar'),s)
+  el('photo-modal').classList.add('open')
 }
 
-window.closeModal=function(){document.getElementById('photo-modal').classList.remove('open');}
+window.closeModal = function(){el('photo-modal').classList.remove('open')}
 
-window.openContactModal=function(){
-  const p=APP.viewingSubmission;if(!p)return;
-  const s=p.profiles||APP.sellers.find(u=>u.id===p.seller_id);
-  document.getElementById('email-to').value=s?s.name+' ('+( s.email||'via admin')+')'  :'Seller';
-  document.getElementById('email-subject').value=p.description?'Interested in: '+p.description.substring(0,40):'Interested in your item';
-  document.getElementById('email-body').value='';
-  document.getElementById('email-modal').classList.add('open');
+window.openContactModal = function(){
+  const p=APP.viewing; if(!p)return
+  const s=p.profiles||APP.sellers.find(u=>u.id===p.seller_id)
+  el('email-to').value=s?s.name:''
+  el('email-subject').value=p.description?`Interested in: ${p.description.substring(0,40)}`:'Interested in your item'
+  el('email-body').value=''
+  el('email-modal').classList.add('open')
 }
 
-window.closeEmailModal=function(){document.getElementById('email-modal').classList.remove('open');}
+window.closeEmailModal = function(){el('email-modal').classList.remove('open')}
 
-window.sendContactEmail=async function(){
-  const p=APP.viewingSubmission;if(!p)return;
-  const s=p.profiles||APP.sellers.find(u=>u.id===p.seller_id);
-  const subject=document.getElementById('email-subject').value;
-  const body=document.getElementById('email-body').value;
-  if(!body.trim()){toast('Please write a message.');return;}
-  setBtn('send-email-btn',true);
+window.sendContactEmail = async function(){
+  const p=APP.viewing; if(!p)return
+  const s=p.profiles||APP.sellers.find(u=>u.id===p.seller_id)
+  const subject=el('email-subject').value
+  const body=el('email-body').value
+  if(!body.trim()){window.toast('Please write a message.');return}
+  setBtn('send-email-btn',true)
   try{
-    await sendEmail(
-      s&&s.email?s.email:ADMIN_EMAIL,subject,
-      '<p>Message from dealer <strong>'+APP.profile.name+'</strong> regarding: <em>'+(p.description||'your listing')+'</em></p><blockquote style="border-left:3px solid #3C3489;padding-left:1rem;color:#444;margin:1rem 0;">'+body+'</blockquote><p style="color:#888;font-size:12px;">Sent via AG Dealer Connect &mdash; antiquegatherings.com/submit</p>'
-    );
-    closeEmailModal();toast('Message sent!');
-  }catch(e){toast('Send failed.');}
-  finally{setBtn('send-email-btn',false,'Send message');}
+    const toEmail=s&&s.email?s.email:ADMIN_EMAIL
+    await mail(toEmail,subject,`<p>Message from dealer <strong>${APP.profile.name}</strong> regarding: <em>${p.description||'your listing'}</em></p><blockquote style="border-left:3px solid #3C3489;padding-left:1rem;color:#444;margin:1rem 0;">${body}</blockquote><p style="color:#888;font-size:12px;">Sent via AG Dealer Connect</p>`)
+    window.closeEmailModal()
+    window.toast('Message sent!')
+  }catch(e){window.toast('Send failed.')}
+  finally{setBtn('send-email-btn',false,'Send message')}
 }
 
+// ---- ADMIN ----
 async function loadAdmin(){
   const[dr,sr,subr]=await Promise.all([
     sb.from('profiles').select('*').eq('type','dealer').order('created_at',{ascending:false}),
     sb.from('profiles').select('*').eq('type','seller').order('created_at',{ascending:false}),
     sb.from('submissions').select('*, profiles:seller_id(name)').order('created_at',{ascending:false})
-  ]);
-  APP.dealers=dr.data||[];APP.sellers=sr.data||[];APP.submissions=subr.data||[];
-  renderAdminDealers();renderAdminSellers();renderAdminPhotos();
+  ])
+  APP.dealers=dr.data||[]
+  APP.sellers=sr.data||[]
+  APP.submissions=subr.data||[]
+  renderAdminDealers(); renderAdminSellers(); renderAdminPhotos()
 }
 
-window.adminTab=function(n){
-  document.querySelectorAll('.admin-tab').forEach((t,i)=>t.classList.toggle('active',['dealers','sellers','photos'][i]===n));
-  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('admin-'+n).classList.add('active');
+window.adminTab = function(n){
+  document.querySelectorAll('.admin-tab').forEach((t,i)=>t.classList.toggle('active',['dealers','sellers','photos'][i]===n))
+  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'))
+  el('admin-'+n).classList.add('active')
 }
 
 function renderAdminDealers(){
-  document.getElementById('admin-dealers-body').innerHTML=APP.dealers.map(d=>'<tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar avatar-sm" style="background:'+sc(d.id)+';color:'+scd(d.id)+';font-size:11px;">'+(d.avatar_url?'<img src="'+d.avatar_url+'" style="width:34px;height:34px;object-fit:cover;border-radius:50%;">':initials(d.name))+'</div>'+d.name+'</div></td><td>'+(d.business_name||'—')+'</td><td>'+d.email+'</td><td>'+(d.dealer_number||'—')+'</td><td><span class="badge '+(d.dealer_status||'pending')+'">'+(d.dealer_status||'pending')+'</span></td><td><div class="td-actions">'+(d.dealer_status!=='approved'?'<button class="btn sm primary" onclick="dealerAction(''+d.id+'','approved')">Approve</button>':'')+(d.dealer_status!=='rejected'?'<button class="btn danger sm" onclick="dealerAction(''+d.id+'','rejected')">Reject</button>':'')+'<button class="btn sm" onclick="adminDeleteUser(''+d.id+'')">Remove</button></div></td></tr>').join('')||'<tr><td colspan="6" style="text-align:center;color:#888;padding:1.5rem;">No dealers yet.</td></tr>';
+  const tbody=el('admin-dealers-body')
+  tbody.innerHTML=''
+  APP.dealers.forEach(d=>{
+    const tr=document.createElement('tr')
+    const avEl=d.avatar_url?`<img src="${d.avatar_url}" style="width:34px;height:34px;object-fit:cover;border-radius:50%;">`:`<span>${ini(d.name)}</span>`
+    tr.innerHTML=`
+      <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar avatar-sm" style="background:${bg(d.id)};color:${fg(d.id)};font-size:11px;">${avEl}</div>${d.name}</div></td>
+      <td>${d.business_name||'—'}</td>
+      <td>${d.email}</td>
+      <td>${d.dealer_number||'—'}</td>
+      <td><span class="badge ${d.dealer_status||'pending'}">${d.dealer_status||'pending'}</span></td>
+      <td><div class="td-actions"></div></td>`
+    const actions=tr.querySelector('.td-actions')
+    if(d.dealer_status!=='approved'){const b=document.createElement('button');b.className='btn sm primary';b.textContent='Approve';b.addEventListener('click',()=>dealerAction(d.id,'approved'));actions.appendChild(b)}
+    if(d.dealer_status!=='rejected'){const b=document.createElement('button');b.className='btn danger sm';b.textContent='Reject';b.addEventListener('click',()=>dealerAction(d.id,'rejected'));actions.appendChild(b)}
+    const rb=document.createElement('button');rb.className='btn sm';rb.textContent='Remove';rb.addEventListener('click',()=>adminDel(d.id));actions.appendChild(rb)
+    tbody.appendChild(tr)
+  })
+  if(!APP.dealers.length)tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#888;padding:1.5rem;">No dealers yet.</td></tr>'
 }
 
-window.dealerAction=async function(id,status){
-  const{data,error}=await sb.from('profiles').update({dealer_status:status}).eq('id',id).select().single();
-  if(error){toast('Update failed.');return;}
-  const idx=APP.dealers.findIndex(d=>d.id===id);if(idx>=0)APP.dealers[idx]=data;
-  renderAdminDealers();toast('Dealer '+status+'.');
-  if(status==='approved'&&data){try{await sendEmail(data.email,'Your AG Dealer Connect account has been approved','<p>Hi '+data.name+', your dealer account has been approved. <a href="https://submit.antiquegatherings.com">Log in here.</a></p>');}catch(e){}}
+async function dealerAction(id,status){
+  const{data,error}=await sb.from('profiles').update({dealer_status:status}).eq('id',id).select().single()
+  if(error){window.toast('Update failed.');return}
+  const idx=APP.dealers.findIndex(d=>d.id===id)
+  if(idx>=0)APP.dealers[idx]=data
+  renderAdminDealers()
+  window.toast('Dealer '+status+'.')
+  if(status==='approved'&&data){try{await mail(data.email,'Your AG Dealer Connect account has been approved',`<p>Hi ${data.name}, your dealer account has been approved. <a href="https://ag-dealer-connect.vercel.app">Log in here.</a></p>`)}catch(e){}}
 }
 
 function renderAdminSellers(){
-  document.getElementById('admin-sellers-body').innerHTML=APP.sellers.map(s=>{
-    const count=APP.submissions.filter(p=>(p.profiles&&p.profiles.id===s.id)||p.seller_id===s.id).length;
-    return '<tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar avatar-sm" style="background:'+sc(s.id)+';color:'+scd(s.id)+';font-size:11px;">'+(s.avatar_url?'<img src="'+s.avatar_url+'" style="width:34px;height:34px;object-fit:cover;border-radius:50%;">':initials(s.name))+'</div>'+s.name+'</div></td><td>'+s.email+'</td><td>'+(s.phone||'—')+'</td><td>'+count+'</td><td><button class="btn danger sm" onclick="adminDeleteUser(''+s.id+'')">Remove</button></td></tr>';
-  }).join('')||'<tr><td colspan="5" style="text-align:center;color:#888;padding:1.5rem;">No sellers yet.</td></tr>';
+  const tbody=el('admin-sellers-body')
+  tbody.innerHTML=''
+  APP.sellers.forEach(s=>{
+    const count=APP.submissions.filter(p=>(p.profiles&&p.profiles.id===s.id)||p.seller_id===s.id).length
+    const tr=document.createElement('tr')
+    const avEl=s.avatar_url?`<img src="${s.avatar_url}" style="width:34px;height:34px;object-fit:cover;border-radius:50%;">`:`<span>${ini(s.name)}</span>`
+    tr.innerHTML=`
+      <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar avatar-sm" style="background:${bg(s.id)};color:${fg(s.id)};font-size:11px;">${avEl}</div>${s.name}</div></td>
+      <td>${s.email}</td><td>${s.phone||'—'}</td><td>${count}</td>
+      <td><div class="td-actions"></div></td>`
+    const b=document.createElement('button');b.className='btn danger sm';b.textContent='Remove';b.addEventListener('click',()=>adminDel(s.id))
+    tr.querySelector('.td-actions').appendChild(b)
+    tbody.appendChild(tr)
+  })
+  if(!APP.sellers.length)tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#888;padding:1.5rem;">No sellers yet.</td></tr>'
 }
 
-window.adminDeleteUser=async function(id){
-  if(!confirm('Remove this user and all their data?'))return;
-  await sb.from('submissions').delete().eq('seller_id',id);
-  await sb.from('profiles').delete().eq('id',id);
-  APP.dealers=APP.dealers.filter(u=>u.id!==id);APP.sellers=APP.sellers.filter(u=>u.id!==id);APP.submissions=APP.submissions.filter(p=>p.seller_id!==id);
-  renderAdminDealers();renderAdminSellers();renderAdminPhotos();toast('User removed.');
+async function adminDel(id){
+  if(!confirm('Remove this user and all their data?'))return
+  await sb.from('submissions').delete().eq('seller_id',id)
+  await sb.from('profiles').delete().eq('id',id)
+  APP.dealers=APP.dealers.filter(u=>u.id!==id)
+  APP.sellers=APP.sellers.filter(u=>u.id!==id)
+  APP.submissions=APP.submissions.filter(p=>p.seller_id!==id)
+  renderAdminDealers(); renderAdminSellers(); renderAdminPhotos()
+  window.toast('User removed.')
 }
 
 function renderAdminPhotos(){
-  const grid=document.getElementById('admin-photos-grid');
-  if(!APP.submissions.length){grid.innerHTML='<div class="empty-state">No submissions yet.</div>';return;}
-  grid.innerHTML=APP.submissions.map(p=>'<div class="dealer-photo-card" onclick="openPhotoModal(''+p.id+'')"><div class="photo-ph">'+(p.image_url?'<img src="'+p.image_url+'" alt="item">':'📷')+'</div><div class="card-footer"><div class="price">'+(p.price||'Price TBD')+'</div><div class="desc">'+(p.description||'No description')+'</div><div class="seller-tag" style="margin-top:4px;">By '+(p.profiles?p.profiles.name:'Unknown')+' &middot; '+timeAgo(p.created_at)+'</div></div></div>').join('');
+  const grid=el('admin-photos-grid')
+  if(!APP.submissions.length){grid.innerHTML='<div class="empty-state">No submissions yet.</div>';return}
+  grid.innerHTML=''
+  APP.submissions.forEach(p=>{
+    const card=document.createElement('div')
+    card.className='dealer-photo-card'
+    const img=p.image_url?`<img src="${p.image_url}" alt="item">`:'📷'
+    const sName=p.profiles?p.profiles.name:'Unknown'
+    card.innerHTML=`
+      <div class="photo-ph">${img}</div>
+      <div class="card-footer">
+        <div class="price">${p.price||'Price TBD'}</div>
+        <div class="desc">${p.description||'No description'}</div>
+        <div class="seller-tag" style="margin-top:4px;">By ${sName} &middot; ${ago(p.created_at)}</div>
+      </div>`
+    card.addEventListener('click',()=>openModal(p.id))
+    grid.appendChild(card)
+  })
 }
 
-document.getElementById('photo-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
-document.getElementById('email-modal').addEventListener('click',function(e){if(e.target===this)closeEmailModal();});
+el('photo-modal').addEventListener('click',function(e){if(e.target===this)window.closeModal()})
+el('email-modal').addEventListener('click',function(e){if(e.target===this)window.closeEmailModal()})
 
-(async()=>{const{data:{session}}=await sb.auth.getSession();if(session)await loadUserAndRoute(session.user);})();
+// check session on load
+;(async()=>{
+  const{data:{session}}=await sb.auth.getSession()
+  if(session)await route(session.user)
+})()
 </script>
 </body>
 </html>
