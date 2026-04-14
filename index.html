@@ -143,15 +143,15 @@ body { font-family: system-ui, sans-serif; background: #f5f5f3; color: #1a1a1a; 
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 200; display: none; align-items: center; justify-content: center; padding: 1rem; }
 .modal-overlay.open { display: flex; }
-.modal { background: #fff; border-radius: 12px; width: 100%; max-width: 860px; max-height: 90vh; overflow: auto; display: flex; flex-direction: column; }
+.modal { background: #fff; border-radius: 12px; width: 100%; max-width: 860px; max-height: 88vh; overflow: hidden; display: flex; flex-direction: column; }
 .modal-header { padding: 1rem 1.5rem; border-bottom: 0.5px solid rgba(0,0,0,0.12); display: flex; align-items: center; justify-content: space-between; }
 .modal-header h3 { font-size: 17px; font-weight: 500; }
 .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #888; padding: 4px 8px; border-radius: 6px; }
 .modal-close:hover { background: #f0eeea; }
-.modal-body { display: flex; gap: 0; flex: 1; }
-.modal-img { flex: 1; background: #111; display: flex; align-items: center; justify-content: center; min-height: 300px; }
-.modal-img .photo-ph { width: 100%; height: 400px; display: flex; align-items: center; justify-content: center; font-size: 72px; }
-.modal-info { width: 280px; min-width: 260px; padding: 1.5rem; border-left: 0.5px solid rgba(0,0,0,0.12); display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+.modal-body { display: flex; gap: 0; flex: 1; overflow: hidden; min-height: 0; }
+.modal-img { flex: 1; background: #111; display: flex; align-items: center; justify-content: center; min-height: 0; max-height: 420px; overflow: hidden; }
+.modal-img .photo-ph { width: 100%; height: 300px; display: flex; align-items: center; justify-content: center; font-size: 72px; }
+.modal-info { width: 280px; min-width: 260px; padding: 1.5rem; border-left: 0.5px solid rgba(0,0,0,0.12); display: flex; flex-direction: column; gap: 12px; overflow-y: auto; max-height: 88vh; }
 .seller-profile-row { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 0.5px solid rgba(0,0,0,0.12); }
 .seller-profile-row .info h4 { font-size: 15px; font-weight: 500; }
 .seller-profile-row .info p { font-size: 12px; color: #888; margin-top: 2px; }
@@ -588,6 +588,8 @@ async function route(user){
 async function uploadImg(file,folder='submissions'){
   const fd=new FormData()
   fd.append('file',file); fd.append('upload_preset',PRESET); fd.append('folder',folder)
+  fd.append('eager','w_1200,h_1200,c_limit,q_auto,f_auto')
+  fd.append('eager_async','false')
   const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,{method:'POST',body:fd})
   if(!r.ok)throw new Error('Upload failed')
   const d=await r.json()
@@ -858,7 +860,7 @@ function openModal(pid){
   el('modal-seller-notes').textContent=s?(s.notes||'None'):'—'
   el('modal-seller-location').textContent=s&&s.address?s.address.split(',').slice(1).join(',').trim():'—'
   const imgWrap=el('modal-img-wrap')
-  imgWrap.innerHTML=p.image_url?`<img src="${p.image_url}" alt="item">`:'<div class="photo-ph">📷</div>'
+  imgWrap.innerHTML=p.image_url?`<img src="${p.image_url}" alt="item" style="max-width:100%;max-height:360px;object-fit:contain;display:block;margin:auto;">`:'<div class="photo-ph">📷</div>'
   av(el('modal-seller-avatar'),s)
   el('photo-modal').classList.add('open')
 }
