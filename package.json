@@ -1,18 +1,5 @@
 {
   "name": "ag-dealer-connect",
   "version": "1.0.0",
-  "description": "AG Dealer Connect - antiquegatherings.com/submit",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
-    "resend": "^2.0.0"
-  },
-  "devDependencies": {
-    "vite": "^5.0.0"
-  }
+  "description": "AG Dealer Connect - antiquegatherings.com/submit"
 }
