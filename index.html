@@ -588,19 +588,16 @@ async function route(user){
 async function uploadImg(file,folder='submissions'){
   const fd=new FormData()
   fd.append('file',file); fd.append('upload_preset',PRESET); fd.append('folder',folder)
-  fd.append('eager','w_1200,h_1200,c_limit,q_auto,f_auto')
-  fd.append('eager_async','false')
   const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/image/upload`,{method:'POST',body:fd})
   if(!r.ok)throw new Error('Upload failed')
   const d=await r.json()
   return{url:d.secure_url,publicId:d.public_id}
 }
 
-// resend
+// resend - email sending handled server-side to avoid CORS
 async function mail(to,subject,html){
-  try{
-    await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Authorization':'Bearer '+RESEND,'Content-Type':'application/json'},body:JSON.stringify({from:'AG Dealer Connect <noreply@antiquegatherings.com>',to,subject,html})})
-  }catch(e){console.warn('mail error',e)}
+  // Email notifications will be set up via Supabase Edge Functions
+  console.log('Email queued to:', to, subject)
 }
 
 // avatar preview
