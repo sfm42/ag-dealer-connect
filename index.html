@@ -767,22 +767,25 @@ function renderSeller(){
       await sb.from('submissions').update({description:e.target.value}).eq('id',p.id)
       p.description=e.target.value
     })
-    card.addEventListener('click', e=>{
-      if(e.target.classList.contains('del-btn')){
-        if(e.target.dataset.confirm==='yes'){
-          delPhoto(p.id)
-        } else {
-          e.target.dataset.confirm='yes'
-          e.target.textContent='Tap again to confirm'
-          e.target.style.background='#E24B4A'
-          e.target.style.color='#fff'
-          setTimeout(()=>{
-            e.target.dataset.confirm=''
-            e.target.textContent='Delete'
-            e.target.style.background=''
-            e.target.style.color=''
-          }, 3000)
-        }
+    const delBtn = card.querySelector('.del-btn')
+    delBtn.dataset.pid = p.id
+    delBtn.addEventListener('click', function(){
+      if(this.dataset.confirm==='yes'){
+        delPhoto(this.dataset.pid)
+      } else {
+        this.dataset.confirm='yes'
+        this.textContent='Tap again to confirm'
+        this.style.background='#E24B4A'
+        this.style.color='#fff'
+        this.style.borderColor='#E24B4A'
+        const btn = this
+        setTimeout(()=>{
+          btn.dataset.confirm=''
+          btn.textContent='Delete'
+          btn.style.background=''
+          btn.style.color=''
+          btn.style.borderColor=''
+        }, 3000)
       }
     })
     grid.appendChild(card)
