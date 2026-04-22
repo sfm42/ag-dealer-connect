@@ -588,7 +588,7 @@ const SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const CLOUD = 'dujmo9fbu'
 const PRESET = 'ag_dealer_connect'
 const RESEND = 're_egHBiKmF_8nUWPbHiojjJuwtTuY3MLwni'
-const ADMIN_EMAIL = 'submitadmin@antiquegatherings.com'
+const ADMIN_EMAIL = 'sfmag32ndst@outlook.com'
 const sb = createClient(SURL, SKEY)
 
 const APP = { user:null, profile:null, submissions:[], sellers:[], dealers:[], filter:'all', view:'photos', expanded:new Set(), viewing:null }
@@ -767,7 +767,9 @@ function renderSeller(){
       await sb.from('submissions').update({description:e.target.value}).eq('id',p.id)
       p.description=e.target.value
     })
-    card.querySelector('.del-btn').addEventListener('click',()=>delPhoto(p.id))
+    card.addEventListener('click', e=>{
+      if(e.target.classList.contains('del-btn')) delPhoto(p.id)
+    })
     grid.appendChild(card)
   })
 }
