@@ -703,7 +703,6 @@ async function uploadImg(file,folder='submissions'){
 // resend - email sending handled server-side to avoid CORS
 async function mail(to,subject,html){
   // Email notifications will be set up via Supabase Edge Functions
-  console.log('Email queued to:', to, subject)
 }
 
 // avatar preview
@@ -770,7 +769,6 @@ function renderSeller(){
     const delBtn = card.querySelector('.del-btn')
     delBtn.dataset.pid = p.id
     delBtn.addEventListener('click', function(){
-      console.log('delete btn clicked, confirm:', this.dataset.confirm, 'pid:', this.dataset.pid)
       if(this.dataset.confirm==='yes'){
         delPhoto(this.dataset.pid)
       } else {
@@ -794,9 +792,7 @@ function renderSeller(){
 }
 
 window.deletePhoto = async function delPhoto(id){
-  console.log('delPhoto called with id:', id)
   const{error}=await sb.from('submissions').delete().eq('id',id)
-  console.log('delete result error:', error)
   if(error){window.toast('Delete failed: '+error.message);return}
   APP.submissions=APP.submissions.filter(p=>p.id!==id)
   renderSeller()
@@ -804,7 +800,6 @@ window.deletePhoto = async function delPhoto(id){
 }
 
 function delPhoto(id){
-  console.log('local delPhoto called with id:', id)
   window.deletePhoto(id)
 }
 
