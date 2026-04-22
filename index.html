@@ -768,14 +768,28 @@ function renderSeller(){
       p.description=e.target.value
     })
     card.addEventListener('click', e=>{
-      if(e.target.classList.contains('del-btn')) delPhoto(p.id)
+      if(e.target.classList.contains('del-btn')){
+        if(e.target.dataset.confirm==='yes'){
+          delPhoto(p.id)
+        } else {
+          e.target.dataset.confirm='yes'
+          e.target.textContent='Tap again to confirm'
+          e.target.style.background='#E24B4A'
+          e.target.style.color='#fff'
+          setTimeout(()=>{
+            e.target.dataset.confirm=''
+            e.target.textContent='Delete'
+            e.target.style.background=''
+            e.target.style.color=''
+          }, 3000)
+        }
+      }
     })
     grid.appendChild(card)
   })
 }
 
 window.deletePhoto = async function delPhoto(id){
-  if(!confirm('Delete this submission?'))return
   await sb.from('submissions').delete().eq('id',id)
   APP.submissions=APP.submissions.filter(p=>p.id!==id)
   renderSeller()
@@ -783,7 +797,7 @@ window.deletePhoto = async function delPhoto(id){
 }
 
 window.deleteAllPhotos = async function(){
-  if(!confirm('Delete all submissions? This cannot be undone.'))return
+  // confirmed via UI
   await sb.from('submissions').delete().eq('seller_id',APP.profile.id)
   APP.submissions=[]
   renderSeller()
