@@ -667,7 +667,7 @@ window.doSignup = async function(){
     if(avatarFile){try{const r=await uploadImg(avatarFile,'avatars');avatarUrl=r.url}catch(e){console.warn('avatar fail',e)}}
     const{error:pe}=await sb.from('profiles').insert({id:data.user.id,...prof,avatar_url:avatarUrl})
     if(pe)throw pe
-    if(prof.type==='dealer'){try{await mail(ADMIN_EMAIL,'New dealer application: '+prof.name,`<p>New dealer application from <strong>${prof.name}</strong>. <a href="https://ag-dealer-connect.vercel.app">Review in admin portal.</a></p>`)}catch(e){}}
+    if(prof.type==='dealer'){try{await sendEdgeEmail('dealer_application',{name:prof.name,email,business_name:prof.business_name,dealer_number:prof.dealer_number})}catch(e){}}
     window.toast('Account created! Welcome.')
     await route(data.user)
   }catch(e){showErr('signup-error',e.message||'Signup failed.')}
@@ -701,8 +701,21 @@ async function uploadImg(file,folder='submissions'){
 }
 
 // resend - email sending handled server-side to avoid CORS
-async function mail(to,subject,html){
-  // Email notifications will be set up via Supabase Edge Functions
+const EDGE_URL = 'https://yrjotpgjljgksoyxhdzx.supabase.co/functions/v1/send-email'
+
+async function sendEdgeEmail(type, data){
+  try{
+    await fetch(EDGE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, data })
+    })
+  }catch(e){ console.warn('Email error:', e) }
+}
+
+// keep mail() as alias for backwards compat
+async function mail(to, subject, html){
+  await sendEdgeEmail('legacy', { to, subject, html })
 }
 
 // avatar preview
@@ -829,7 +842,7 @@ window.handleFileUpload = async function(e){
   el('progress-bar').style.width='100%'
   el('upload-status').textContent='Done!'
   setTimeout(()=>{el('upload-progress-wrap').style.display='none';el('progress-bar').style.width='0'},1500)
-  try{await mail(ADMIN_EMAIL,`New submissions from ${APP.profile.name}`,`<p>${files.length} new item(s) from ${APP.profile.name}. <a href="https://ag-dealer-connect.vercel.app">View in admin portal.</a></p>`)}catch(err){}
+  try{await sendEdgeEmail('new_submission',{seller_name:APP.profile.name,count:files.length})}catch(err){}
   e.target.value=''
   renderSeller()
   window.toast(`${files.length} item${files.length>1?'s':''} submitted!`)
@@ -1028,7 +1041,7 @@ window.sendContactEmail = async function(){
   setBtn('send-email-btn',true)
   try{
     const toEmail=s&&s.email?s.email:ADMIN_EMAIL
-    await mail(toEmail,subject,`<p>Message from dealer <strong>${APP.profile.name}</strong> regarding: <em>${p.description||'your listing'}</em></p><blockquote style="border-left:3px solid #3C3489;padding-left:1rem;color:#444;margin:1rem 0;">${body}</blockquote><p style="color:#888;font-size:12px;">Sent via AG Dealer Connect</p>`)
+    await sendEdgeEmail('contact_seller',{seller_email:toEmail,dealer_name:APP.profile.name,item_desc:p.description||'',subject,message:body})
     window.closeEmailModal()
     window.toast('Message sent!')
   }catch(e){window.toast('Send failed.')}
@@ -1083,7 +1096,7 @@ async function dealerAction(id,status){
   if(idx>=0)APP.dealers[idx]=data
   renderAdminDealers()
   window.toast('Dealer '+status+'.')
-  if(status==='approved'&&data){try{await mail(data.email,'Your AG Dealer Connect account has been approved',`<p>Hi ${data.name}, your dealer account has been approved. <a href="https://ag-dealer-connect.vercel.app">Log in here.</a></p>`)}catch(e){}}
+  if(status==='approved'&&data){try{await sendEdgeEmail('dealer_approved',{name:data.name,email:data.email})}catch(e){}}
 }
 
 function renderAdminSellers(){
