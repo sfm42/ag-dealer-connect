@@ -332,13 +332,32 @@ tr:last-child td { border-bottom: none; }
   <div class="page-wrap">
     <div class="card">
       <h2>Create account</h2>
-      <p class="card-sub">Join AG Dealer Connect — free for sellers</p>
+      <p class="card-sub">Please select the account type that describes you</p>
       <div id="signup-error" class="error-msg" style="display:none;background:#FCEBEB;color:#A32D2D;border:0.5px solid #F09595;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem;"></div>
-      <div class="type-tabs">
-        <button class="type-tab active" id="tab-seller" onclick="window.switchSignupType&&window.switchSignupType('seller')">Seller</button>
-        <button class="type-tab" id="tab-dealer" onclick="window.switchSignupType&&window.switchSignupType('dealer')">Dealer</button>
+
+      <!-- ACCOUNT TYPE SELECTOR -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem;">
+        <div id="type-card-seller" onclick="window.switchSignupType&&window.switchSignupType('seller')" style="border:2px solid #3C3489;border-radius:10px;padding:1rem;cursor:pointer;background:#EEEDFE20;transition:all 0.15s;">
+          <div style="font-size:22px;margin-bottom:6px;">🏷️</div>
+          <div style="font-size:14px;font-weight:500;color:#3C3489;">I am a Seller</div>
+          <div style="font-size:11px;color:#888;margin-top:4px;line-height:1.4;">I have items to sell and want to connect with Antique Gatherings dealers</div>
+        </div>
+        <div id="type-card-dealer" onclick="window.switchSignupType&&window.switchSignupType('dealer')" style="border:2px solid rgba(0,0,0,0.12);border-radius:10px;padding:1rem;cursor:pointer;background:transparent;transition:all 0.15s;">
+          <div style="font-size:22px;margin-bottom:6px;">🏛️</div>
+          <div style="font-size:14px;font-weight:500;color:#666;">I am a Dealer</div>
+          <div style="font-size:11px;color:#888;margin-top:4px;line-height:1.4;">I am an approved Antique Gatherings dealer looking to source items</div>
+        </div>
+      </div>
+
+      <!-- HIDDEN ORIGINAL TABS (kept for JS compatibility) -->
+      <div style="display:none;">
+        <button id="tab-seller" onclick="window.switchSignupType&&window.switchSignupType('seller')">Seller</button>
+        <button id="tab-dealer" onclick="window.switchSignupType&&window.switchSignupType('dealer')">Dealer</button>
       </div>
       <div id="signup-seller">
+        <div style="background:#E1F5EE;border:0.5px solid #9FE1CB;border-radius:8px;padding:10px 14px;font-size:13px;color:#0F6E56;margin-bottom:1.25rem;line-height:1.5;">
+          🏷️ <strong>Seller accounts are free and instant.</strong> Once registered you can immediately start uploading photos of items you want to sell to our dealer network.
+        </div>
         <div style="display:flex;justify-content:center;margin-bottom:1.25rem;">
           <label class="avatar-upload-wrap" for="s-avatar-input">
             <div class="avatar avatar-lg" id="s-avatar-preview" style="border:0.5px solid rgba(0,0,0,0.2);">📷</div>
@@ -357,6 +376,9 @@ tr:last-child td { border-bottom: none; }
         <div class="form-group"><label>Notes (optional)</label><textarea id="s-notes" placeholder="Tell us about what you typically sell..."></textarea></div>
       </div>
       <div id="signup-dealer" style="display:none">
+        <div style="background:#FAEEDA;border:0.5px solid #FAC775;border-radius:8px;padding:10px 14px;font-size:13px;color:#854F0B;margin-bottom:1.25rem;line-height:1.5;">
+          🏛️ <strong>Dealer accounts require admin approval.</strong> Once you submit your application, the AG team will review and activate your account before you can access seller submissions.
+        </div>
         <div style="display:flex;justify-content:center;margin-bottom:1.25rem;">
           <label class="avatar-upload-wrap" for="d-avatar-input">
             <div class="avatar avatar-lg" id="d-avatar-preview" style="border:0.5px solid rgba(0,0,0,0.2);">📷</div>
@@ -625,6 +647,27 @@ window.switchSignupType = function(type){
   el('signup-dealer').style.display=type==='dealer'?'block':'none'
   el('tab-seller').classList.toggle('active',type==='seller')
   el('tab-dealer').classList.toggle('active',type==='dealer')
+
+  // Update visual cards
+  const sellerCard=el('type-card-seller')
+  const dealerCard=el('type-card-dealer')
+  if(sellerCard&&dealerCard){
+    if(type==='seller'){
+      sellerCard.style.border='2px solid #3C3489'
+      sellerCard.style.background='#EEEDFE20'
+      sellerCard.querySelector('div:nth-child(2)').style.color='#3C3489'
+      dealerCard.style.border='2px solid rgba(0,0,0,0.12)'
+      dealerCard.style.background='transparent'
+      dealerCard.querySelector('div:nth-child(2)').style.color='#666'
+    } else {
+      dealerCard.style.border='2px solid #3C3489'
+      dealerCard.style.background='#EEEDFE20'
+      dealerCard.querySelector('div:nth-child(2)').style.color='#3C3489'
+      sellerCard.style.border='2px solid rgba(0,0,0,0.12)'
+      sellerCard.style.background='transparent'
+      sellerCard.querySelector('div:nth-child(2)').style.color='#666'
+    }
+  }
 }
 
 // auth
