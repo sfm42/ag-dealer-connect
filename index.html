@@ -275,9 +275,7 @@ tr:last-child td { border-bottom: none; }
 @media (max-width: 768px) {
   .upload-btns { margin: 0 0 1rem; }
 }
-img { transition: opacity 0.2s ease; }
-img[loading="lazy"] { opacity: 0; }
-img[loading="lazy"].loaded { opacity: 1; }
+img { transition: opacity 0.3s ease; }
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .upload-zone.dragging{border-color:#2C2C2A;background:#F5F0E820;}
@@ -810,11 +808,16 @@ const EDGE_URL = 'https://yrjotpgjljgksoyxhdzx.supabase.co/functions/v1/send-ema
 // Cloudinary URL optimizer - transforms image URLs to serve smaller versions
 function imgThumb(url, width=400){
   if(!url || !url.includes('cloudinary.com')) return url
-  return url.replace('/upload/', `/upload/w_${width},q_auto,f_auto,c_limit/`)
+  // Use Cloudinary fetch transformation - works on free plan
+  const parts = url.split('/upload/')
+  if(parts.length !== 2) return url
+  return parts[0] + `/upload/w_${width},h_${width},c_fill,q_auto,f_auto/` + parts[1]
 }
 function imgFull(url){
   if(!url || !url.includes('cloudinary.com')) return url
-  return url.replace('/upload/', '/upload/w_1200,q_auto,f_auto,c_limit/')
+  const parts = url.split('/upload/')
+  if(parts.length !== 2) return url
+  return parts[0] + '/upload/w_1200,q_auto,f_auto/' + parts[1]
 }
 
 async function sendEdgeEmail(type, data){
