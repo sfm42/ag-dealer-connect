@@ -275,6 +275,9 @@ tr:last-child td { border-bottom: none; }
 @media (max-width: 768px) {
   .upload-btns { margin: 0 0 1rem; }
 }
+img { transition: opacity 0.2s ease; }
+img[loading="lazy"] { opacity: 0; }
+img[loading="lazy"].loaded { opacity: 1; }
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .upload-zone.dragging{border-color:#2C2C2A;background:#F5F0E820;}
@@ -314,7 +317,32 @@ tr:last-child td { border-bottom: none; }
       <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"></div>
       <div class="form-footer">
         <button class="btn primary" id="login-btn" onclick="window.doLogin&&window.doLogin()">Log in</button>
+        <div class="text-link" onclick="window.showScreen&&window.showScreen('screen-forgot')">Forgot your password? <span>Reset it</span></div>
         <div class="text-link" onclick="window.showScreen&&window.showScreen('screen-signup')">No account? <span>Sign up free</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- FORGOT PASSWORD -->
+<div id="screen-forgot" class="screen">
+  <div class="navbar">
+    <div class="nav-logo"><img class="ag-logo" style="height:38px;" alt="AG"><div class="nav-logo-text"><span>AG Dealer Connect</span><span>antiquegatherings.com/submit</span></div></div>
+    <button class="btn sm" onclick="window.showScreen&&window.showScreen('screen-login')">Back</button>
+  </div>
+  <div class="page-wrap">
+    <div class="card">
+      <h2>Reset your password</h2>
+      <p class="card-sub">Enter your email and we'll send you a reset link</p>
+      <div id="forgot-error" class="error-msg" style="display:none;background:#FCEBEB;color:#A32D2D;border:0.5px solid #F09595;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem;"></div>
+      <div id="forgot-success" style="display:none;background:#E1F5EE;color:#0F6E56;border:0.5px solid #9FE1CB;border-radius:8px;padding:12px 14px;font-size:14px;margin-bottom:1rem;line-height:1.5;">
+        ✅ <strong>Reset link sent!</strong> Check your email inbox and click the link to set a new password. You can close this page.
+      </div>
+      <div class="form-group"><label>Email address</label><input type="email" id="forgot-email" placeholder="you@email.com"></div>
+      <div class="form-footer">
+        <button class="btn primary" id="forgot-btn" onclick="window.doForgotPassword&&window.doForgotPassword()">Send reset link</button>
+        <div class="text-link" onclick="window.showScreen&&window.showScreen('screen-login')">Remembered it? <span>Back to login</span></div>
       </div>
     </div>
   </div>
@@ -717,6 +745,39 @@ window.doSignup = async function(){
   finally{setBtn('signup-btn',false,'Create account')}
 }
 
+window.doForgotPassword = async function(){
+  const email = document.getElementById('forgot-email').value.trim()
+  const errEl = document.getElementById('forgot-error')
+  const successEl = document.getElementById('forgot-success')
+  errEl.style.display='none'
+  successEl.style.display='none'
+
+  if(!email){
+    errEl.textContent='Please enter your email address.'
+    errEl.style.display='block'
+    return
+  }
+
+  const btn = document.getElementById('forgot-btn')
+  btn.disabled=true
+  btn.innerHTML='<span class="spinner"></span>Sending...'
+
+  try{
+    const{error} = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://submit.antiquegatherings.com'
+    })
+    if(error) throw error
+    successEl.style.display='block'
+    document.getElementById('forgot-email').value=''
+  }catch(e){
+    errEl.textContent = e.message || 'Something went wrong. Please try again.'
+    errEl.style.display='block'
+  }finally{
+    btn.disabled=false
+    btn.textContent='Send reset link'
+  }
+}
+
 window.logout = async function(){
   await sb.auth.signOut()
   APP.user=null; APP.profile=null
@@ -745,6 +806,16 @@ async function uploadImg(file,folder='submissions'){
 
 // resend - email sending handled server-side to avoid CORS
 const EDGE_URL = 'https://yrjotpgjljgksoyxhdzx.supabase.co/functions/v1/send-email'
+
+// Cloudinary URL optimizer - transforms image URLs to serve smaller versions
+function imgThumb(url, width=400){
+  if(!url || !url.includes('cloudinary.com')) return url
+  return url.replace('/upload/', `/upload/w_${width},q_auto,f_auto,c_limit/`)
+}
+function imgFull(url){
+  if(!url || !url.includes('cloudinary.com')) return url
+  return url.replace('/upload/', '/upload/w_1200,q_auto,f_auto,c_limit/')
+}
 
 async function sendEdgeEmail(type, data){
   try{
@@ -806,7 +877,7 @@ function renderSeller(){
   APP.submissions.forEach(p=>{
     const card=document.createElement('div')
     card.className='photo-card'
-    const img=p.image_url?`<img src="${p.image_url}" alt="item">`:'📷'
+    const img=p.image_url?`<img src="${imgThumb(p.image_url,400)}" alt="item" loading="lazy">`:'📷'
     card.innerHTML=`
       <div class="photo-ph" style="background:#F9F7F4;">${img}</div>
       <div class="photo-body">
@@ -967,7 +1038,7 @@ function renderDealerPhotos(){
     const s=p.profiles
     const card=document.createElement('div')
     card.className='dealer-photo-card'
-    const img=p.image_url?`<img src="${p.image_url}" alt="item">`:'📷'
+    const img=p.image_url?`<img src="${imgThumb(p.image_url,400)}" alt="item" loading="lazy">`:'📷'
     const avHtml=s&&s.avatar_url?`<img src="${s.avatar_url}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;">`:`<div style="width:20px;height:20px;border-radius:50%;background:${bg(s?s.id:'x')};display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:${fg(s?s.id:'x')}">${s?ini(s.name):'?'}</div>`
     const newBadge=p.is_new?'<span class="new-badge">NEW</span>':''
     const timeBadge=p.is_new?'':`<span class="time-badge">${ago(p.created_at)}</span>`
@@ -1026,7 +1097,7 @@ function renderSellersList(){
       subs.forEach(p=>{
         const item=document.createElement('div')
         item.className='strip-item'
-        const img=p.image_url?`<img src="${p.image_url}" alt="item" style="width:100%;height:100%;object-fit:cover;">`:'📷'
+        const img=p.image_url?`<img src="${imgThumb(p.image_url,300)}" alt="item" loading="lazy" style="width:100%;height:100%;object-fit:cover;">`:'📷'
         item.innerHTML=`
           <div class="s-ph">${img}</div>
           <div class="s-info">
@@ -1057,7 +1128,7 @@ function openModal(pid){
   el('modal-seller-notes').textContent=s?(s.notes||'None'):'—'
   el('modal-seller-location').textContent=s&&s.address?s.address.split(',').slice(1).join(',').trim():'—'
   const imgWrap=el('modal-img-wrap')
-  imgWrap.innerHTML=p.image_url?`<img src="${p.image_url}" alt="item" style="max-width:100%;max-height:360px;object-fit:contain;display:block;margin:auto;">`:'<div class="photo-ph">📷</div>'
+  imgWrap.innerHTML=p.image_url?`<img src="${imgFull(p.image_url)}" alt="item" style="max-width:100%;max-height:360px;object-fit:contain;display:block;margin:auto;">`:'<div class="photo-ph">📷</div>'
   av(el('modal-seller-avatar'),s)
   el('photo-modal').classList.add('open')
 }
@@ -1178,7 +1249,7 @@ function renderAdminPhotos(){
   APP.submissions.forEach(p=>{
     const card=document.createElement('div')
     card.className='dealer-photo-card'
-    const img=p.image_url?`<img src="${p.image_url}" alt="item">`:'📷'
+    const img=p.image_url?`<img src="${imgThumb(p.image_url,400)}" alt="item" loading="lazy">`:'📷'
     const sName=p.profiles?p.profiles.name:'Unknown'
     card.innerHTML=`
       <div class="photo-ph">${img}</div>
