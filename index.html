@@ -736,7 +736,11 @@ window.doSignup = async function(){
     if(avatarFile){try{const r=await uploadImg(avatarFile,'avatars');avatarUrl=r.url}catch(e){console.warn('avatar fail',e)}}
     const{error:pe}=await sb.from('profiles').insert({id:data.user.id,...prof,avatar_url:avatarUrl})
     if(pe)throw pe
-    if(prof.type==='dealer'){try{await sendEdgeEmail('dealer_application',{name:prof.name,email,business_name:prof.business_name,dealer_number:prof.dealer_number})}catch(e){}}
+    if(prof.type==='dealer'){
+      try{await sendEdgeEmail('dealer_application',{name:prof.name,email,business_name:prof.business_name,dealer_number:prof.dealer_number,phone:prof.phone})}catch(e){}
+    } else {
+      try{await sendEdgeEmail('seller_joined',{name:prof.name,email,phone:prof.phone,address:prof.address,notes:prof.notes})}catch(e){}
+    }
     window.toast('Account created! Welcome.')
     await route(data.user)
   }catch(e){showErr('signup-error',e.message||'Signup failed.')}
