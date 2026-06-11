@@ -276,6 +276,58 @@ tr:last-child td { border-bottom: none; }
   .upload-btns { margin: 0 0 1rem; }
 }
 img { transition: opacity 0.3s ease; }
+
+/* LIGHTBOX */
+.lightbox-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:1000; display:none; align-items:center; justify-content:center; }
+.lightbox-overlay.open { display:flex; }
+.lightbox-container { position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.lightbox-img { max-width:90vw; max-height:90vh; object-fit:contain; cursor:zoom-in; transform-origin:center; transition:transform 0.1s ease; user-select:none; border-radius:4px; }
+.lightbox-img.zoomed { cursor:grab; transition:none; }
+.lightbox-img.grabbing { cursor:grabbing; }
+.lightbox-close { position:fixed; top:1rem; right:1rem; width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.15); border:none; color:#fff; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); z-index:1001; transition:background 0.15s; }
+.lightbox-close:hover { background:rgba(255,255,255,0.3); }
+.lightbox-hint { position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); color:rgba(255,255,255,0.5); font-size:12px; pointer-events:none; letter-spacing:0.05em; }
+.lightbox-zoom-btns { position:fixed; bottom:1.5rem; right:1.5rem; display:flex; gap:8px; z-index:1001; }
+.lightbox-zoom-btn { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.15); border:none; color:#fff; font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); transition:background 0.15s; }
+.lightbox-zoom-btn:hover { background:rgba(255,255,255,0.3); }
+
+/* PHOTO DISPLAY FIXES */
+.dealer-photo-card .photo-ph { width:100%; height:160px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#f9f7f4; }
+.dealer-photo-card .photo-ph img { width:100%; height:100%; object-fit:cover; transition:transform 0.2s ease; }
+.dealer-photo-card:hover .photo-ph img { transform:scale(1.03); }
+.photo-card .photo-ph { width:100%; aspect-ratio:4/3; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#f9f7f4; }
+.photo-card .photo-ph img { width:100%; height:100%; object-fit:cover; }
+.strip-item .s-ph { height:90px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#f9f7f4; }
+.strip-item .s-ph img { width:100%; height:100%; object-fit:cover; }
+
+/* MOBILE PHOTO IMPROVEMENTS */
+@media (max-width:768px) {
+  .dealer-photo-card .photo-ph { height:140px; }
+  .photo-card .photo-ph { aspect-ratio:1/1; }
+  .dealer-grid { grid-template-columns:repeat(2,1fr); gap:0.75rem; }
+  .photos-grid { grid-template-columns:repeat(2,1fr); gap:0.75rem; }
+  .photo-card .photo-body input, .photo-card .photo-body textarea { font-size:16px; }
+  /* Prevent text zoom on iOS */
+  input, textarea, select { font-size:16px !important; }
+  /* Better touch scrolling */
+  .dash-content { -webkit-overflow-scrolling:touch; }
+  .dealer-grid, .photos-grid { -webkit-overflow-scrolling:touch; }
+  /* Modal full screen on mobile */
+  .modal { border-radius:16px 16px 0 0; max-height:95vh; }
+  .modal-overlay { align-items:flex-end; padding:0; }
+  .modal-img { max-height:280px; }
+  .modal-img img { max-height:260px; }
+}
+
+@media (max-width:480px) {
+  .dealer-grid { grid-template-columns:repeat(2,1fr); gap:0.5rem; }
+  .photos-grid { grid-template-columns:repeat(2,1fr); gap:0.5rem; }
+  .dealer-photo-card .photo-ph { height:120px; }
+  .dealer-photo-card .card-footer { padding:7px 8px; }
+  .dealer-photo-card .card-footer .price { font-size:12px; }
+  .dealer-photo-card .card-footer .desc { font-size:10px; }
+}
+
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .upload-zone.dragging{border-color:#2C2C2A;background:#F5F0E820;}
@@ -582,7 +634,7 @@ img { transition: opacity 0.3s ease; }
 <!-- PHOTO DETAIL MODAL -->
 <div class="modal-overlay" id="photo-modal">
   <div class="modal">
-    <div class="modal-header"><h3>Item detail</h3><button class="modal-close" onclick="window.closeModal&&window.closeModal()">×</button></div>
+    <div class="modal-header"><h3>Item detail</h3><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:#aaa;">🔍 Click photo to zoom</span><button class="modal-close" onclick="window.closeModal&&window.closeModal()">×</button></div></div>
     <div class="modal-body">
       <div class="modal-img"><div class="photo-ph" id="modal-img-wrap">📷</div></div>
       <div class="modal-info">
@@ -615,6 +667,19 @@ img { transition: opacity 0.3s ease; }
       <button class="btn primary" onclick="window.sendContactEmail&&window.sendContactEmail()">Send message</button>
     </div>
   </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox-overlay" id="lightbox">
+  <div class="lightbox-container" id="lightbox-container">
+    <img class="lightbox-img" id="lightbox-img" src="" alt="Item photo">
+  </div>
+  <button class="lightbox-close" onclick="closeLightbox()">×</button>
+  <div class="lightbox-zoom-btns">
+    <button class="lightbox-zoom-btn" onclick="zoomLightbox(-0.5)" title="Zoom out">−</button>
+    <button class="lightbox-zoom-btn" onclick="zoomLightbox(0.5)" title="Zoom in">+</button>
+  </div>
+  <div class="lightbox-hint" id="lightbox-hint">Scroll or pinch to zoom · Click and drag to pan</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -892,6 +957,8 @@ function renderSeller(){
         <textarea class="desc-in" placeholder="Describe the item...">${p.description||''}</textarea>
         <div class="photo-actions"><button class="btn danger sm del-btn">Delete</button></div>
       </div>`
+    const sellerPhImg = card.querySelector('.photo-ph img')
+    if(sellerPhImg){ sellerPhImg.style.cursor='zoom-in'; sellerPhImg.addEventListener('click',()=>openLightbox(p.image_url)) }
     card.querySelector('.price-in').addEventListener('change',async e=>{
       await sb.from('submissions').update({price:e.target.value}).eq('id',p.id)
       p.price=e.target.value
@@ -1135,7 +1202,12 @@ function openModal(pid){
   el('modal-seller-notes').textContent=s?(s.notes||'None'):'—'
   el('modal-seller-location').textContent=s&&s.address?s.address.split(',').slice(1).join(',').trim():'—'
   const imgWrap=el('modal-img-wrap')
-  imgWrap.innerHTML=p.image_url?`<img src="${imgFull(p.image_url)}" alt="item" style="max-width:100%;max-height:360px;object-fit:contain;display:block;margin:auto;">`:'<div class="photo-ph">📷</div>'
+  if(p.image_url){
+    imgWrap.innerHTML=`<img src="${imgFull(p.image_url)}" alt="item" style="max-width:100%;max-height:360px;object-fit:contain;display:block;margin:auto;cursor:zoom-in;" title="Click to zoom">`
+    imgWrap.querySelector('img').addEventListener('click',()=>openLightbox(p.image_url))
+  } else {
+    imgWrap.innerHTML='<div class="photo-ph">📷</div>'
+  }
   av(el('modal-seller-avatar'),s)
   el('photo-modal').classList.add('open')
 }
@@ -1278,6 +1350,98 @@ el('photo-modal').addEventListener('click',function(e){if(e.target===this)window
 el('email-modal').addEventListener('click',function(e){if(e.target===this)window.closeEmailModal()})
 
 // check session on load
+
+// ---- LIGHTBOX ----
+const LB = { scale:1, minScale:1, maxScale:5, startX:0, startY:0, translateX:0, translateY:0, dragging:false, lastTouchDist:0 }
+
+window.openLightbox = function(url){
+  if(!url) return
+  const overlay = el('lightbox')
+  const img = el('lightbox-img')
+  const hint = el('lightbox-hint')
+  img.src = url.includes('cloudinary.com') ? url.replace('/upload/', '/upload/w_2000,q_auto,f_auto/') : url
+  LB.scale=1; LB.translateX=0; LB.translateY=0
+  img.style.transform='scale(1) translate(0px,0px)'
+  img.classList.remove('zoomed','grabbing')
+  overlay.classList.add('open')
+  hint.style.opacity='1'
+  setTimeout(()=>{ hint.style.transition='opacity 1s'; hint.style.opacity='0' }, 3000)
+  document.body.style.overflow='hidden'
+}
+
+window.closeLightbox = function(){
+  el('lightbox').classList.remove('open')
+  document.body.style.overflow=''
+}
+
+window.zoomLightbox = function(delta){
+  LB.scale = Math.min(LB.maxScale, Math.max(LB.minScale, LB.scale + delta))
+  applyLightboxTransform()
+}
+
+function applyLightboxTransform(){
+  const img = el('lightbox-img')
+  if(LB.scale <= 1){ LB.translateX=0; LB.translateY=0 }
+  img.style.transform = `scale(${LB.scale}) translate(${LB.translateX/LB.scale}px, ${LB.translateY/LB.scale}px)`
+  img.classList.toggle('zoomed', LB.scale > 1)
+}
+
+// Mouse wheel zoom
+el('lightbox').addEventListener('wheel', e=>{
+  e.preventDefault()
+  const delta = e.deltaY > 0 ? -0.3 : 0.3
+  LB.scale = Math.min(LB.maxScale, Math.max(LB.minScale, LB.scale + delta))
+  applyLightboxTransform()
+}, { passive:false })
+
+// Mouse drag to pan
+const lbImg = el('lightbox-img')
+lbImg.addEventListener('mousedown', e=>{
+  if(LB.scale <= 1) return
+  LB.dragging=true; LB.startX=e.clientX-LB.translateX; LB.startY=e.clientY-LB.translateY
+  lbImg.classList.add('grabbing')
+  e.preventDefault()
+})
+document.addEventListener('mousemove', e=>{
+  if(!LB.dragging) return
+  LB.translateX=e.clientX-LB.startX; LB.translateY=e.clientY-LB.startY
+  applyLightboxTransform()
+})
+document.addEventListener('mouseup', ()=>{ LB.dragging=false; lbImg.classList.remove('grabbing') })
+
+// Double click to zoom in/reset
+lbImg.addEventListener('dblclick', e=>{
+  if(LB.scale > 1){ LB.scale=1; LB.translateX=0; LB.translateY=0 }
+  else { LB.scale=2.5 }
+  applyLightboxTransform()
+  e.preventDefault()
+})
+
+// Touch pinch to zoom
+el('lightbox').addEventListener('touchstart', e=>{
+  if(e.touches.length===2){
+    LB.lastTouchDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY)
+  }
+}, { passive:true })
+el('lightbox').addEventListener('touchmove', e=>{
+  if(e.touches.length===2){
+    e.preventDefault()
+    const dist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY)
+    const delta = (dist - LB.lastTouchDist) * 0.01
+    LB.scale = Math.min(LB.maxScale, Math.max(LB.minScale, LB.scale + delta))
+    LB.lastTouchDist = dist
+    applyLightboxTransform()
+  }
+}, { passive:false })
+
+// Close on background click
+el('lightbox').addEventListener('click', e=>{
+  if(e.target === el('lightbox') || e.target === el('lightbox-container')) closeLightbox()
+})
+
+// Close on Escape key
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeLightbox() })
+
 ;(async()=>{
   const{data:{session}}=await sb.auth.getSession()
   if(session)await route(session.user)
