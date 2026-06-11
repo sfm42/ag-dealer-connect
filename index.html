@@ -720,13 +720,13 @@ window.doSignup = async function(){
     email=el('s-email').value.trim(); pass=el('s-pass').value
     if(!fn||!email||!pass){showErr('signup-error','Please fill in all required fields.');return}
     avatarFile=el('s-avatar-input').files[0]||null
-    prof={type:'seller',name:fn+' '+el('s-lname').value.trim(),phone:el('s-phone').value,address:el('s-addr').value,notes:el('s-notes').value}
+    prof={type:'seller',name:fn+' '+el('s-lname').value.trim(),email:email,phone:el('s-phone').value,address:el('s-addr').value,notes:el('s-notes').value}
   }else{
     const fn=el('d-fname').value.trim()
     email=el('d-email').value.trim(); pass=el('d-pass').value
     if(!fn||!email||!pass){showErr('signup-error','Please fill in all required fields.');return}
     avatarFile=el('d-avatar-input').files[0]||null
-    prof={type:'dealer',dealer_status:'pending',name:fn+' '+el('d-lname').value.trim(),business_name:el('d-biz').value,phone:el('d-phone').value,address:el('d-addr').value,dealer_number:el('d-dealnum').value,store_location:el('d-store').value}
+    prof={type:'dealer',dealer_status:'pending',name:fn+' '+el('d-lname').value.trim(),email:email,business_name:el('d-biz').value,phone:el('d-phone').value,address:el('d-addr').value,dealer_number:el('d-dealnum').value,store_location:el('d-store').value}
   }
   setBtn('signup-btn',true)
   try{
