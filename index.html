@@ -568,10 +568,10 @@ img { transition: opacity 0.3s ease; }
   </div>
   <div class="dash-content" style="padding-top:1.5rem;">
     <div id="admin-dealers" class="admin-panel active">
-      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Business</th><th>Email</th><th>Dealer #</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-dealers-body"></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Business</th><th>Email</th><th>Phone</th><th>Dealer #</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-dealers-body"></tbody></table></div>
     </div>
     <div id="admin-sellers" class="admin-panel">
-      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Submissions</th><th>Actions</th></tr></thead><tbody id="admin-sellers-body"></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Submissions</th><th>Actions</th></tr></thead><tbody id="admin-sellers-body"></tbody></table></div>
     </div>
     <div id="admin-photos" class="admin-panel">
       <div id="admin-photos-grid" class="dealer-grid" style="padding:1rem;"></div>
@@ -1197,7 +1197,8 @@ function renderAdminDealers(){
     tr.innerHTML=`
       <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar avatar-sm" style="background:${bg(d.id)};color:${fg(d.id)};font-size:11px;">${avEl}</div>${d.name}</div></td>
       <td>${d.business_name||'—'}</td>
-      <td>${d.email}</td>
+      <td><a href="mailto:${d.email}" style="color:#8B7355;text-decoration:none;">${d.email}</a></td>
+      <td>${d.phone||'—'}</td>
       <td>${d.dealer_number||'—'}</td>
       <td><span class="badge ${d.dealer_status||'pending'}">${d.dealer_status||'pending'}</span></td>
       <td><div class="td-actions"></div></td>`
@@ -1207,7 +1208,7 @@ function renderAdminDealers(){
     const rb=document.createElement('button');rb.className='btn sm';rb.textContent='Remove';rb.addEventListener('click',()=>adminDel(d.id));actions.appendChild(rb)
     tbody.appendChild(tr)
   })
-  if(!APP.dealers.length)tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#888;padding:1.5rem;">No dealers yet.</td></tr>'
+  if(!APP.dealers.length)tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#888;padding:1.5rem;">No dealers yet.</td></tr>'
 }
 
 async function dealerAction(id,status){
@@ -1229,13 +1230,16 @@ function renderAdminSellers(){
     const avEl=s.avatar_url?`<img src="${s.avatar_url}" style="width:34px;height:34px;object-fit:cover;border-radius:50%;">`:`<span>${ini(s.name)}</span>`
     tr.innerHTML=`
       <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar avatar-sm" style="background:${bg(s.id)};color:${fg(s.id)};font-size:11px;">${avEl}</div>${s.name}</div></td>
-      <td>${s.email}</td><td>${s.phone||'—'}</td><td>${count}</td>
+      <td><a href="mailto:${s.email}" style="color:#8B7355;text-decoration:none;">${s.email}</a></td>
+      <td>${s.phone||'—'}</td>
+      <td style="font-size:12px;color:#666;">${s.address||'—'}</td>
+      <td>${count}</td>
       <td><div class="td-actions"></div></td>`
     const b=document.createElement('button');b.className='btn danger sm';b.textContent='Remove';b.addEventListener('click',()=>adminDel(s.id))
     tr.querySelector('.td-actions').appendChild(b)
     tbody.appendChild(tr)
   })
-  if(!APP.sellers.length)tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#888;padding:1.5rem;">No sellers yet.</td></tr>'
+  if(!APP.sellers.length)tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#888;padding:1.5rem;">No sellers yet.</td></tr>'
 }
 
 async function adminDel(id){
