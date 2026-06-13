@@ -367,6 +367,20 @@ img { transition: opacity 0.3s ease; }
   .modal-close { display:flex; }
 }
 
+
+/* FAVORITES */
+.fav-btn { position:absolute; top:8px; right:8px; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow:0 1px 4px rgba(0,0,0,0.15); transition:transform 0.15s, background 0.15s; z-index:2; backdrop-filter:blur(4px); }
+.fav-btn:hover { transform:scale(1.15); background:#fff; }
+.fav-btn.active { background:#fff3f3; }
+.dealer-photo-card { position:relative; }
+.fav-count { font-size:11px; color:#8B7355; margin-left:4px; }
+
+/* FAVORITES EMPTY STATE */
+.fav-empty { text-align:center; padding:3rem 1.5rem; color:#888; }
+.fav-empty .fav-empty-icon { font-size:48px; margin-bottom:1rem; opacity:0.4; }
+.fav-empty h3 { font-size:16px; font-weight:500; margin-bottom:0.5rem; color:#555; }
+.fav-empty p { font-size:13px; }
+
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .upload-zone.dragging{border-color:#2C2C2A;background:#F5F0E820;}
@@ -623,6 +637,7 @@ img { transition: opacity 0.3s ease; }
     <div class="dealer-view-tabs">
       <button class="dealer-view-tab active" id="dvt-photos" onclick="window.dealerViewTab&&window.dealerViewTab('photos')">🖼 All submissions — newest first</button>
       <button class="dealer-view-tab" id="dvt-sellers" onclick="window.dealerViewTab&&window.dealerViewTab('sellers')">👤 Browse by seller — newest first</button>
+      <button class="dealer-view-tab" id="dvt-favorites" onclick="window.dealerViewTab&&window.dealerViewTab('favorites')">♥ My favorites <span class="fav-count" id="fav-tab-count"></span></button>
     </div>
     <div id="dv-photos" class="dealer-view-content active">
       <div class="photos-toolbar">
@@ -636,6 +651,13 @@ img { transition: opacity 0.3s ease; }
     </div>
     <div id="dv-sellers" class="dealer-view-content">
       <div class="sellers-list" id="sellers-list"></div>
+    </div>
+    <div id="dv-favorites" class="dealer-view-content">
+      <div class="photos-toolbar">
+        <h3 id="fav-view-count">My favorites</h3>
+        <button class="btn danger sm" onclick="window.clearFavorites&&window.clearFavorites()" id="clear-favs-btn" style="display:none;">Clear all</button>
+      </div>
+      <div class="dash-content"><div id="favorites-grid" class="dealer-grid"></div></div>
     </div>
   </div>
 </div>
@@ -699,7 +721,10 @@ img { transition: opacity 0.3s ease; }
           <div class="info-block"><label>Address</label><p id="modal-seller-addr">—</p></div>
           <div class="info-block"><label>Notes</label><p id="modal-seller-notes" style="font-size:13px;color:#666;">—</p></div>
         </div>
-        <button class="btn primary" onclick="window.openContactModal&&window.openContactModal()" style="margin-top:auto;">✉ Contact seller</button>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:auto;">
+        <button class="btn primary" onclick="window.openContactModal&&window.openContactModal()">✉ Contact seller</button>
+        <button id="modal-fav-btn" class="btn" onclick="window.modalToggleFav&&window.modalToggleFav()" style="font-size:14px;">♡ Add to favorites</button>
+      </div>
       </div>
     </div>
   </div>
@@ -753,7 +778,87 @@ const RESEND = 're_egHBiKmF_8nUWPbHiojjJuwtTuY3MLwni'
 const ADMIN_EMAIL = 'sfmag32ndst@outlook.com'
 const sb = createClient(SURL, SKEY)
 
-const APP = { user:null, profile:null, submissions:[], sellers:[], dealers:[], filter:'all', view:'photos', expanded:new Set(), viewing:null }
+const APP = { user:null, profile:null, submissions:[], sellers:[], dealers:[], filter:'all', view:'photos', expanded:new Set(), viewing:null, favorites:new Set() }
+
+// Load favorites from localStorage (persists between sessions)
+function loadFavorites(){
+  try{
+    const saved = localStorage.getItem('ag_favorites_'+( APP.profile?.id||''))
+    if(saved) APP.favorites = new Set(JSON.parse(saved))
+  }catch(e){}
+}
+function saveFavorites(){
+  try{
+    localStorage.setItem('ag_favorites_'+(APP.profile?.id||''), JSON.stringify([...APP.favorites]))
+  }catch(e){}
+}
+function updateFavCount(){
+  const count = APP.favorites.size
+  const countEl = el('fav-tab-count')
+  if(countEl) countEl.textContent = count > 0 ? `(${count})` : ''
+  const clearBtn = el('clear-favs-btn')
+  if(clearBtn) clearBtn.style.display = count > 0 ? 'inline-flex' : 'none'
+}
+
+window.toggleFavorite = function(id){
+  if(APP.favorites.has(id)){
+    APP.favorites.delete(id)
+    window.toast('Removed from favorites')
+  } else {
+    APP.favorites.add(id)
+    window.toast('Added to favorites ♥')
+  }
+  saveFavorites()
+  updateFavCount()
+  // Re-render current view to update heart state
+  if(APP.view==='photos') renderDealerPhotos()
+  else if(APP.view==='favorites') renderFavorites()
+}
+
+window.clearFavorites = function(){
+  if(!confirm('Clear all favorites?')) return
+  APP.favorites.clear()
+  saveFavorites()
+  updateFavCount()
+  renderFavorites()
+  window.toast('Favorites cleared')
+}
+
+function renderFavorites(){
+  const grid = el('favorites-grid')
+  const countEl = el('fav-view-count')
+  const favSubs = APP.submissions.filter(p=>APP.favorites.has(p.id))
+  if(countEl) countEl.textContent = `My favorites (${favSubs.length})`
+  updateFavCount()
+  if(!favSubs.length){
+    grid.innerHTML=`<div class="fav-empty">
+      <div class="fav-empty-icon">♡</div>
+      <h3>No favorites yet</h3>
+      <p>Tap the ♡ on any item while browsing to save it here</p>
+    </div>`
+    return
+  }
+  grid.innerHTML=''
+  favSubs.forEach(p=>{
+    const s=p.profiles||APP.sellers.find(u=>u.id===p.seller_id)
+    const card=document.createElement('div')
+    card.className='dealer-photo-card'
+    const img=p.image_url?`<img src="${imgThumb(p.image_url,400)}" alt="item" loading="lazy">`:'📷'
+    const avHtml=s&&s.avatar_url?`<img src="${s.avatar_url}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;">`:`<div style="width:20px;height:20px;border-radius:50%;background:${bg(s?s.id:'x')};display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:${fg(s?s.id:'x')}">${s?ini(s.name):'?'}</div>`
+    card.innerHTML=`
+      <div class="photo-ph">${img}
+        <button class="fav-btn active" data-id="${p.id}" title="Remove from favorites">♥</button>
+      </div>
+      <div class="card-footer">
+        <div class="price">${p.price||'Price TBD'}<span class="time-badge">${ago(p.created_at)}</span></div>
+        <div class="desc">${p.description||'No description'}</div>
+        <div class="seller-row">${avHtml}<span class="seller-tag">${s?s.name:'Unknown'}</span></div>
+      </div>`
+    card.querySelector('.fav-btn').addEventListener('click',e=>{e.stopPropagation();toggleFavorite(p.id)})
+    card.addEventListener('click',()=>openModal(p.id))
+    grid.appendChild(card)
+  })
+}
 
 // utils
 function ini(n){return n?n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase():'?'}
@@ -1132,16 +1237,21 @@ async function loadDealerData(){
   ])
   APP.submissions=s.data||[]
   APP.sellers=sel.data||[]
+  loadFavorites()
+  updateFavCount()
 }
 
 window.dealerViewTab = function(tab){
   APP.view=tab
   el('dvt-photos').classList.toggle('active',tab==='photos')
   el('dvt-sellers').classList.toggle('active',tab==='sellers')
+  el('dvt-favorites').classList.toggle('active',tab==='favorites')
   el('dv-photos').classList.toggle('active',tab==='photos')
   el('dv-sellers').classList.toggle('active',tab==='sellers')
+  el('dv-favorites').classList.toggle('active',tab==='favorites')
   if(tab==='photos')renderDealerPhotos()
-  else renderSellersList()
+  else if(tab==='sellers')renderSellersList()
+  else renderFavorites()
 }
 
 window.photosFilter = function(f){
@@ -1152,7 +1262,7 @@ window.photosFilter = function(f){
 }
 
 function renderDealerPhotos(){
-  const ph=APP.filter==='new'?APP.submissions.filter(p=>p.is_new):APP.submissions
+  const ph=APP.filter==='new'?APP.submissions.filter(p=>(Date.now()-new Date(p.created_at).getTime())<24*60*60*1000):APP.submissions
   const grid=el('dealer-photos-grid')
   el('photos-view-count').textContent=APP.filter==='new'?`${ph.length} new submission${ph.length!==1?'s':''}`:`${APP.submissions.length} submission${APP.submissions.length!==1?'s':''} · newest first`
   if(!ph.length){grid.innerHTML='<div class="empty-state">No submissions found.</div>';return}
@@ -1163,15 +1273,23 @@ function renderDealerPhotos(){
     card.className='dealer-photo-card'
     const img=p.image_url?`<img src="${imgThumb(p.image_url,400)}" alt="item" loading="lazy">`:'📷'
     const avHtml=s&&s.avatar_url?`<img src="${s.avatar_url}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;">`:`<div style="width:20px;height:20px;border-radius:50%;background:${bg(s?s.id:'x')};display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:${fg(s?s.id:'x')}">${s?ini(s.name):'?'}</div>`
-    const newBadge=p.is_new?'<span class="new-badge">NEW</span>':''
-    const timeBadge=p.is_new?'':`<span class="time-badge">${ago(p.created_at)}</span>`
+    const isNew = (Date.now() - new Date(p.created_at).getTime()) < 24*60*60*1000
+    const newBadge=isNew?'<span class="new-badge">NEW</span>':''
+    const timeBadge=isNew?'':`<span class="time-badge">${ago(p.created_at)}</span>`
+    const isFav = APP.favorites.has(p.id)
     card.innerHTML=`
-      <div class="photo-ph">${img}</div>
+      <div class="photo-ph">${img}
+        <button class="fav-btn ${isFav?'active':''}" data-id="${p.id}" title="${isFav?'Remove from favorites':'Add to favorites'}">${isFav?'♥':'♡'}</button>
+      </div>
       <div class="card-footer">
         <div class="price">${p.price||'Price TBD'}${newBadge}${timeBadge}</div>
         <div class="desc">${p.description||'No description'}</div>
         <div class="seller-row">${avHtml}<span class="seller-tag">${s?s.name:'Unknown'}</span></div>
       </div>`
+    card.querySelector('.fav-btn').addEventListener('click', e=>{
+      e.stopPropagation()
+      toggleFavorite(p.id)
+    })
     card.addEventListener('click',()=>openModal(p.id))
     grid.appendChild(card)
   })
@@ -1190,7 +1308,7 @@ function renderSellersList(){
     const card=document.createElement('div')
     card.className='seller-card'
     const isExp=APP.expanded.has(s.id)
-    const hasNew=subs.some(p=>p.is_new)
+    const hasNew=subs.some(p=>(Date.now()-new Date(p.created_at).getTime())<24*60*60*1000)
     const city=s.address?s.address.split(',').filter((_,i)=>i>0).join(',').trim():''
     const avEl=s.avatar_url?`<img src="${s.avatar_url}" style="width:52px;height:52px;object-fit:cover;border-radius:50%;">`:`<span style="font-size:18px;font-weight:500;color:${fg(s.id)}">${ini(s.name)}</span>`
     card.innerHTML=`
@@ -1258,10 +1376,31 @@ function openModal(pid){
     imgWrap.innerHTML='<div class="photo-ph">📷</div>'
   }
   av(el('modal-seller-avatar'),s)
+  // Update favorite button in modal
+  const favBtn = el('modal-fav-btn')
+  if(favBtn){
+    const isFav = APP.favorites.has(p.id)
+    favBtn.textContent = isFav ? '♥ Remove from favorites' : '♡ Add to favorites'
+    favBtn.style.color = isFav ? '#E24B4A' : ''
+    favBtn.style.borderColor = isFav ? '#E24B4A' : ''
+  }
   el('photo-modal').classList.add('open')
   // Push state so device back button closes modal instead of leaving site
   if(window.history && window.history.pushState){
     window.history.pushState({modal:'photo'}, '', window.location.href)
+  }
+}
+
+window.modalToggleFav = function(){
+  if(!APP.viewing) return
+  toggleFavorite(APP.viewing.id)
+  // Update button state
+  const favBtn = el('modal-fav-btn')
+  if(favBtn){
+    const isFav = APP.favorites.has(APP.viewing.id)
+    favBtn.textContent = isFav ? '♥ Remove from favorites' : '♡ Add to favorites'
+    favBtn.style.color = isFav ? '#E24B4A' : ''
+    favBtn.style.borderColor = isFav ? '#E24B4A' : ''
   }
 }
 
