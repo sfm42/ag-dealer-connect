@@ -678,6 +678,7 @@ img { transition: opacity 0.3s ease; }
     <button class="admin-tab active" onclick="window.adminTab&&window.adminTab('dealers')">Dealers</button>
     <button class="admin-tab" onclick="window.adminTab&&window.adminTab('sellers')">Sellers</button>
     <button class="admin-tab" onclick="window.adminTab&&window.adminTab('photos')">All submissions</button>
+    <button class="admin-tab" onclick="window.adminTab&&window.adminTab('broadcast')">📣 Broadcast</button>
   </div>
   <div class="dash-content" style="padding-top:1.5rem;">
     <div id="admin-dealers" class="admin-panel active">
@@ -688,6 +689,59 @@ img { transition: opacity 0.3s ease; }
     </div>
     <div id="admin-photos" class="admin-panel">
       <div id="admin-photos-grid" class="dealer-grid" style="padding:1rem;"></div>
+    </div>
+
+    <!-- BROADCAST PANEL -->
+    <div id="admin-broadcast" class="admin-panel">
+      <div style="max-width:600px;">
+
+        <!-- RECIPIENT SELECTOR -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.5rem;">
+          <div id="bc-card-sellers" onclick="window.setBroadcastTarget&&window.setBroadcastTarget('sellers')" style="border:2px solid #2C2C2A;border-radius:10px;padding:1rem;cursor:pointer;background:#f9f7f4;text-align:center;transition:all 0.15s;">
+            <div style="font-size:24px;margin-bottom:6px;">🏷️</div>
+            <div style="font-size:14px;font-weight:500;">Sellers only</div>
+            <div style="font-size:11px;color:#888;margin-top:3px;" id="bc-seller-count">— sellers</div>
+          </div>
+          <div id="bc-card-dealers" onclick="window.setBroadcastTarget&&window.setBroadcastTarget('dealers')" style="border:2px solid rgba(0,0,0,0.12);border-radius:10px;padding:1rem;cursor:pointer;background:transparent;text-align:center;transition:all 0.15s;">
+            <div style="font-size:24px;margin-bottom:6px;">🏛️</div>
+            <div style="font-size:14px;font-weight:500;">Dealers only</div>
+            <div style="font-size:11px;color:#888;margin-top:3px;" id="bc-dealer-count">— dealers</div>
+          </div>
+          <div id="bc-card-all" onclick="window.setBroadcastTarget&&window.setBroadcastTarget('all')" style="border:2px solid rgba(0,0,0,0.12);border-radius:10px;padding:1rem;cursor:pointer;background:transparent;text-align:center;transition:all 0.15s;">
+            <div style="font-size:24px;margin-bottom:6px;">📣</div>
+            <div style="font-size:14px;font-weight:500;">Everyone</div>
+            <div style="font-size:11px;color:#888;margin-top:3px;" id="bc-all-count">— recipients</div>
+          </div>
+        </div>
+
+        <!-- COMPOSE AREA -->
+        <div style="background:#fff;border:0.5px solid rgba(0,0,0,0.12);border-radius:12px;padding:1.5rem;">
+          <div id="bc-error" style="display:none;background:#FCEBEB;color:#A32D2D;border:0.5px solid #F09595;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem;"></div>
+          <div id="bc-success" style="display:none;background:#E1F5EE;color:#0F6E56;border:0.5px solid #9FE1CB;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:1rem;"></div>
+
+          <div class="form-group">
+            <label>Subject line</label>
+            <input type="text" id="bc-subject" placeholder="e.g. New feature announcement — AG Dealer Connect">
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            <textarea id="bc-message" style="min-height:180px;font-family:inherit;" placeholder="Write your message here...&#10;&#10;This will be sent to all selected recipients."></textarea>
+          </div>
+
+          <!-- PREVIEW -->
+          <div style="background:#f9f7f4;border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:13px;color:#666;">
+            <strong style="color:#2C2C2A;">Sending to:</strong>
+            <span id="bc-preview-target" style="color:#8B7355;font-weight:500;"> Select recipients above</span>
+            &nbsp;·&nbsp;
+            <span id="bc-preview-count" style="color:#888;">0 recipients</span>
+          </div>
+
+          <button class="btn primary" id="bc-send-btn" onclick="window.sendBroadcast&&window.sendBroadcast()" style="width:100%;padding:12px;font-size:15px;">
+            📣 Send broadcast email
+          </button>
+        </div>
+
+      </div>
     </div>
   </div>
 </div>
@@ -1452,9 +1506,10 @@ async function loadAdmin(){
 }
 
 window.adminTab = function(n){
-  document.querySelectorAll('.admin-tab').forEach((t,i)=>t.classList.toggle('active',['dealers','sellers','photos'][i]===n))
+  document.querySelectorAll('.admin-tab').forEach((t,i)=>t.classList.toggle('active',['dealers','sellers','photos','broadcast'][i]===n))
   document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'))
   el('admin-'+n).classList.add('active')
+  if(n==='broadcast') initBroadcast()
 }
 
 function renderAdminDealers(){
@@ -1651,6 +1706,115 @@ window.addEventListener('popstate', function(e){
     photoModal.classList.remove('open')
   }
 })
+
+
+// ---- BROADCAST ----
+const BC = { target: 'sellers' }
+
+function initBroadcast(){
+  const sellers = APP.sellers.length
+  const dealers = APP.dealers.filter(d=>d.dealer_status==='approved').length
+  const all = sellers + dealers
+  el('bc-seller-count').textContent = sellers + ' seller' + (sellers!==1?'s':'')
+  el('bc-dealer-count').textContent = dealers + ' dealer' + (dealers!==1?'s':'')
+  el('bc-all-count').textContent = all + ' recipient' + (all!==1?'s':'')
+  setBroadcastTarget(BC.target)
+}
+
+window.setBroadcastTarget = function(target){
+  BC.target = target
+  const sellers = APP.sellers.length
+  const dealers = APP.dealers.filter(d=>d.dealer_status==='approved').length
+
+  // Update card styles
+  const cards = { sellers:'bc-card-sellers', dealers:'bc-card-dealers', all:'bc-card-all' }
+  Object.entries(cards).forEach(([key,id])=>{
+    const card = el(id)
+    if(!card) return
+    const isActive = key === target
+    card.style.border = isActive ? '2px solid #2C2C2A' : '2px solid rgba(0,0,0,0.12)'
+    card.style.background = isActive ? '#f9f7f4' : 'transparent'
+    card.querySelector('div:nth-child(2)').style.fontWeight = isActive ? '600' : '500'
+  })
+
+  // Update preview
+  const previewTarget = el('bc-preview-target')
+  const previewCount = el('bc-preview-count')
+  if(target==='sellers'){
+    if(previewTarget) previewTarget.textContent = 'Sellers only'
+    if(previewCount) previewCount.textContent = sellers + ' recipient' + (sellers!==1?'s':'')
+  } else if(target==='dealers'){
+    if(previewTarget) previewTarget.textContent = 'Approved dealers only'
+    if(previewCount) previewCount.textContent = dealers + ' recipient' + (dealers!==1?'s':'')
+  } else {
+    if(previewTarget) previewTarget.textContent = 'All sellers and dealers'
+    if(previewCount) previewCount.textContent = (sellers+dealers) + ' recipient' + ((sellers+dealers)!==1?'s':'')
+  }
+}
+
+window.sendBroadcast = async function(){
+  const subject = el('bc-subject').value.trim()
+  const message = el('bc-message').value.trim()
+  const errEl = el('bc-error')
+  const successEl = el('bc-success')
+
+  errEl.style.display='none'
+  successEl.style.display='none'
+
+  if(!subject){ errEl.textContent='Please enter a subject line.'; errEl.style.display='block'; return }
+  if(!message){ errEl.textContent='Please write a message.'; errEl.style.display='block'; return }
+
+  // Build recipient list
+  let recipients = []
+  if(BC.target==='sellers' || BC.target==='all'){
+    recipients = recipients.concat(APP.sellers.filter(s=>s.email).map(s=>({ name:s.name, email:s.email, type:'seller' })))
+  }
+  if(BC.target==='dealers' || BC.target==='all'){
+    recipients = recipients.concat(APP.dealers.filter(d=>d.dealer_status==='approved'&&d.email).map(d=>({ name:d.name, email:d.email, type:'dealer' })))
+  }
+
+  if(!recipients.length){
+    errEl.textContent='No recipients found with email addresses.'
+    errEl.style.display='block'
+    return
+  }
+
+  const btn = el('bc-send-btn')
+  btn.disabled=true
+  btn.innerHTML='<span class="spinner"></span>Sending to ' + recipients.length + ' recipient' + (recipients.length!==1?'s...':'...')
+
+  let sent=0, failed=0
+
+  for(const r of recipients){
+    try{
+      await sendEdgeEmail('broadcast',{
+        to: r.email,
+        name: r.name,
+        subject,
+        message,
+        type: r.type
+      })
+      sent++
+      btn.innerHTML='<span class="spinner"></span>Sent ' + sent + ' of ' + recipients.length + '...'
+    }catch(e){
+      failed++
+      console.warn('Failed to send to', r.email, e)
+    }
+  }
+
+  btn.disabled=false
+  btn.innerHTML='📣 Send broadcast email'
+
+  if(failed===0){
+    successEl.textContent='✅ Broadcast sent successfully to ' + sent + ' recipient' + (sent!==1?'s':'') + '!'
+    successEl.style.display='block'
+    el('bc-subject').value=''
+    el('bc-message').value=''
+  } else {
+    successEl.textContent='Sent to ' + sent + ' recipients. ' + failed + ' failed.'
+    successEl.style.display='block'
+  }
+}
 
 ;(async()=>{
   const{data:{session}}=await sb.auth.getSession()
