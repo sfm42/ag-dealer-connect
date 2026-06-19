@@ -784,6 +784,51 @@ img { transition: opacity 0.3s ease; }
   </div>
 </div>
 
+<!-- PRICE BEFORE UPLOAD MODAL -->
+<div class="modal-overlay" id="price-modal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <button class="modal-back-btn" onclick="cancelPriceModal()">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Cancel
+      </button>
+      <h3 class="modal-title-center" id="price-modal-title">Add details before submitting</h3>
+      <div style="width:60px;"></div>
+    </div>
+    <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem;">
+      <div style="background:#F5F0E8;border-radius:8px;padding:10px 14px;font-size:13px;color:#8B7355;line-height:1.5;">
+        📋 Please add an asking price before your item goes live. Dealers need a price to consider your submission.
+      </div>
+      <div id="price-modal-preview" style="display:flex;gap:12px;align-items:center;background:var(--color-background-secondary);border-radius:8px;padding:10px 12px;">
+        <div id="price-modal-thumb" style="width:56px;height:56px;border-radius:8px;background:var(--color-background-tertiary);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;">📷</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);" id="price-modal-filename">Photo</div>
+          <div style="font-size:11px;color:var(--color-text-secondary);margin-top:2px;" id="price-modal-counter"></div>
+        </div>
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:13px;color:var(--color-text-secondary);display:block;margin-bottom:4px;">
+          Asking price <span style="color:#E24B4A;">*</span> <span style="font-size:11px;color:var(--color-text-secondary);font-weight:400;">(required)</span>
+        </label>
+        <input type="text" id="price-modal-price" placeholder="e.g. $50" style="width:100%;padding:10px 12px;border:0.5px solid rgba(0,0,0,0.25);border-radius:8px;font-size:15px;font-family:inherit;outline:none;">
+        <div id="price-modal-error" style="display:none;color:#E24B4A;font-size:12px;margin-top:4px;">Please enter an asking price to continue.</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-secondary);cursor:pointer;padding:2px 0;">
+        <input type="checkbox" id="price-modal-negotiable" style="width:16px;height:16px;accent-color:#8B7355;cursor:pointer;">
+        Price is negotiable
+      </label>
+      <div class="form-group" style="margin:0;">
+        <label style="font-size:13px;color:var(--color-text-secondary);display:block;margin-bottom:4px;">Description <span style="font-size:11px;font-weight:400;">(optional but recommended)</span></label>
+        <textarea id="price-modal-desc" placeholder="Describe the item — condition, age, brand, dimensions..." style="width:100%;padding:10px 12px;border:0.5px solid rgba(0,0,0,0.25);border-radius:8px;font-size:14px;font-family:inherit;outline:none;resize:none;min-height:80px;"></textarea>
+      </div>
+      <button class="btn primary" id="price-modal-submit-btn" onclick="window.submitWithPrice&&window.submitWithPrice()" style="padding:13px;font-size:15px;">
+        Upload & submit item
+      </button>
+      <p style="font-size:11px;color:var(--color-text-secondary);text-align:center;">Your item will be visible to approved dealers immediately after upload.</p>
+    </div>
+  </div>
+</div>
+
 <!-- EMAIL MODAL -->
 <div class="modal-overlay" id="email-modal">
   <div class="modal" style="max-width:480px;">
@@ -1260,28 +1305,116 @@ window.deleteAllPhotos = async function(){
   window.toast('All submissions deleted.')
 }
 
-window.handleFileUpload = async function(e){
+// Pending files waiting for price input
+const PENDING = { files:[], index:0 }
+
+window.handleFileUpload = function(e){
   const files=Array.from(e.target.files)
   if(!files.length)return
-  el('upload-progress-wrap').style.display='block'
-  let done=0
-  for(const file of files){
-    el('upload-status').textContent=`Uploading ${done+1} of ${files.length}...`
-    el('progress-bar').style.width=Math.round((done/files.length)*100)+'%'
-    try{
-      const{url,publicId}=await uploadImg(file,'submissions')
-      const{data}=await sb.from('submissions').insert({seller_id:APP.profile.id,image_url:url,image_public_id:publicId,is_new:true}).select().single()
-      if(data)APP.submissions.unshift(data)
-    }catch(err){window.toast('Failed to upload '+file.name)}
-    done++
-  }
-  el('progress-bar').style.width='100%'
-  el('upload-status').textContent='Done!'
-  setTimeout(()=>{el('upload-progress-wrap').style.display='none';el('progress-bar').style.width='0'},1500)
-  try{await sendEdgeEmail('new_submission',{seller_name:APP.profile.name,count:files.length})}catch(err){}
   e.target.value=''
-  renderSeller()
-  window.toast(`${files.length} item${files.length>1?'s':''} submitted!`)
+  // Store files and show price modal for first one
+  PENDING.files = files
+  PENDING.index = 0
+  showPriceModal()
+}
+
+function showPriceModal(){
+  const file = PENDING.files[PENDING.index]
+  if(!file) return
+  const total = PENDING.files.length
+  const current = PENDING.index + 1
+
+  // Reset modal fields
+  el('price-modal-price').value=''
+  el('price-modal-desc').value=''
+  el('price-modal-negotiable').checked=false
+  el('price-modal-error').style.display='none'
+  el('price-modal-price').style.borderColor=''
+  el('price-modal-submit-btn').textContent='Upload & submit item'
+  el('price-modal-submit-btn').disabled=false
+
+  // Update title and counter
+  el('price-modal-title').textContent = total > 1 ? `Item ${current} of ${total}` : 'Add details before submitting'
+  el('price-modal-counter').textContent = total > 1 ? `${total - current} more to go after this` : file.name
+  el('price-modal-filename').textContent = file.name
+
+  // Show thumbnail preview
+  const thumb = el('price-modal-thumb')
+  const reader = new FileReader()
+  reader.onload = e => {
+    thumb.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`
+  }
+  reader.readAsDataURL(file)
+
+  // Focus price field
+  setTimeout(()=>{ el('price-modal-price').focus() }, 100)
+
+  el('price-modal').classList.add('open')
+}
+
+window.cancelPriceModal = function(){
+  el('price-modal').classList.remove('open')
+  PENDING.files=[]
+  PENDING.index=0
+}
+
+window.submitWithPrice = async function(){
+  const price = el('price-modal-price').value.trim()
+  const desc = el('price-modal-desc').value.trim()
+  const negotiable = el('price-modal-negotiable').checked
+  const errEl = el('price-modal-error')
+
+  // Validate price
+  if(!price){
+    errEl.style.display='block'
+    el('price-modal-price').style.borderColor='#E24B4A'
+    el('price-modal-price').focus()
+    return
+  }
+
+  errEl.style.display='none'
+  el('price-modal-price').style.borderColor=''
+
+  const btn = el('price-modal-submit-btn')
+  btn.disabled=true
+  btn.innerHTML='<span class="spinner"></span>Uploading...'
+
+  const file = PENDING.files[PENDING.index]
+
+  try{
+    const{url,publicId}=await uploadImg(file,'submissions')
+    const{data}=await sb.from('submissions').insert({
+      seller_id:APP.profile.id,
+      image_url:url,
+      image_public_id:publicId,
+      price,
+      description:desc,
+      negotiable,
+      is_new:true
+    }).select().single()
+    if(data) APP.submissions.unshift(data)
+    window.toast('Item submitted!')
+  }catch(err){
+    window.toast('Upload failed — please try again.')
+    btn.disabled=false
+    btn.textContent='Upload & submit item'
+    return
+  }
+
+  // Close modal and move to next file or finish
+  el('price-modal').classList.remove('open')
+  PENDING.index++
+
+  if(PENDING.index < PENDING.files.length){
+    // Short delay then show next
+    setTimeout(showPriceModal, 400)
+  } else {
+    // All done
+    try{await sendEdgeEmail('new_submission',{seller_name:APP.profile.name,count:PENDING.files.length})}catch(e){}
+    PENDING.files=[]
+    PENDING.index=0
+    renderSeller()
+  }
 }
 
 // detect mobile and update upload hint
@@ -1747,11 +1880,14 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeLightbox() }
 window.addEventListener('popstate', function(e){
   const photoModal = el('photo-modal')
   const lightbox = el('lightbox')
+  const priceModal = el('price-modal')
   if(lightbox && lightbox.classList.contains('open')){
     lightbox.classList.remove('open')
     document.body.style.overflow=''
   } else if(photoModal && photoModal.classList.contains('open')){
     photoModal.classList.remove('open')
+  } else if(priceModal && priceModal.classList.contains('open')){
+    window.cancelPriceModal()
   }
 })
 
@@ -1863,6 +1999,15 @@ window.sendBroadcast = async function(){
     successEl.style.display='block'
   }
 }
+
+// Enter key submits price modal
+document.addEventListener('keydown', e=>{
+  const priceModal = el('price-modal')
+  if(priceModal && priceModal.classList.contains('open') && e.key==='Enter' && e.target.id==='price-modal-price'){
+    e.preventDefault()
+    window.submitWithPrice&&window.submitWithPrice()
+  }
+})
 
 ;(async()=>{
   const{data:{session}}=await sb.auth.getSession()
