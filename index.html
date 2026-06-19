@@ -763,7 +763,7 @@ img { transition: opacity 0.3s ease; }
     <div class="modal-body">
       <div class="modal-img"><div class="photo-ph" id="modal-img-wrap">📷</div></div>
       <div class="modal-info">
-        <div class="info-block"><label>Asking price</label><p class="price-big" id="modal-price">—</p></div>
+        <div class="info-block"><label>Asking price</label><p class="price-big" id="modal-price">—</p><p id="modal-negotiable" style="font-size:12px;color:#8B7355;margin-top:2px;display:none;">Price is negotiable</p></div>
         <div class="info-block"><label>Description</label><p id="modal-desc" style="font-size:14px;color:#666;">—</p></div>
         <div style="border-top:0.5px solid rgba(0,0,0,0.12);padding-top:12px;">
           <p style="font-size:12px;font-weight:500;color:#888;margin-bottom:10px;">SELLER INFO</p>
@@ -1148,6 +1148,11 @@ async function refreshSubs(){
   renderSeller()
 }
 
+function daysRemaining(createdAt){
+  const ms = 45*24*60*60*1000 - (Date.now() - new Date(createdAt).getTime())
+  return Math.max(0, Math.ceil(ms / (24*60*60*1000)))
+}
+
 function renderSeller(){
   const grid=el('seller-photos-grid')
   el('photos-count').textContent=`My submissions (${APP.submissions.length})`
@@ -1158,18 +1163,53 @@ function renderSeller(){
     const card=document.createElement('div')
     card.className='photo-card'
     const img=p.image_url?`<img src="${imgThumb(p.image_url,400)}" alt="item" loading="lazy">`:'📷'
+    const days = daysRemaining(p.created_at)
+    const views = p.view_count||0
+    const daysColor = days <= 7 ? '#E24B4A' : days <= 14 ? '#BA7517' : '#3B6D11'
+    const isNeg = p.negotiable||false
+    const missingPrice = !p.price||p.price.trim()===''
     card.innerHTML=`
       <div class="photo-ph" style="background:#F9F7F4;">${img}</div>
       <div class="photo-body">
-        <input type="text" class="price-in" placeholder="Asking price (e.g. $50)" value="${p.price||''}">
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <div style="flex:1;background:var(--color-background-secondary);border-radius:6px;padding:6px 8px;text-align:center;">
+            <div style="font-size:10px;color:var(--color-text-secondary);margin-bottom:1px;">Views</div>
+            <div style="font-size:15px;font-weight:500;">${views}</div>
+          </div>
+          <div style="flex:1;background:var(--color-background-secondary);border-radius:6px;padding:6px 8px;text-align:center;">
+            <div style="font-size:10px;color:var(--color-text-secondary);margin-bottom:1px;">Days left</div>
+            <div style="font-size:15px;font-weight:500;color:${daysColor};">${days}</div>
+          </div>
+        </div>
+        ${missingPrice ? '<div style="background:#FAEEDA;border:0.5px solid #FAC775;border-radius:6px;padding:6px 9px;font-size:11px;color:#854F0B;margin-bottom:6px;">⚠️ An asking price is required for dealers to see your item</div>' : ''}
+        <input type="text" class="price-in" placeholder="Asking price (required e.g. $50)" value="${p.price||''}" style="${missingPrice?'border-color:#E24B4A;':''}">
+        <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--color-text-secondary);margin-bottom:7px;cursor:pointer;padding:5px 0;">
+          <input type="checkbox" class="neg-in" ${isNeg?'checked':''} style="width:15px;height:15px;accent-color:#8B7355;cursor:pointer;">
+          Price is negotiable
+        </label>
         <textarea class="desc-in" placeholder="Describe the item...">${p.description||''}</textarea>
         <div class="photo-actions"><button class="btn danger sm del-btn">Delete</button></div>
       </div>`
     const sellerPhImg = card.querySelector('.photo-ph img')
     if(sellerPhImg){ sellerPhImg.style.cursor='zoom-in'; sellerPhImg.addEventListener('click',()=>openLightbox(p.image_url)) }
+    // Price - required validation
     card.querySelector('.price-in').addEventListener('change',async e=>{
-      await sb.from('submissions').update({price:e.target.value}).eq('id',p.id)
-      p.price=e.target.value
+      const val = e.target.value.trim()
+      if(!val){
+        e.target.style.borderColor='#E24B4A'
+        window.toast('Please add an asking price.')
+        return
+      }
+      e.target.style.borderColor=''
+      await sb.from('submissions').update({price:val}).eq('id',p.id)
+      p.price=val
+      renderSeller()
+    })
+    // Negotiable toggle
+    card.querySelector('.neg-in').addEventListener('change',async e=>{
+      await sb.from('submissions').update({negotiable:e.target.checked}).eq('id',p.id)
+      p.negotiable=e.target.checked
+      window.toast(e.target.checked?'Marked as negotiable':'Marked as firm price')
     })
     card.querySelector('.desc-in').addEventListener('change',async e=>{
       await sb.from('submissions').update({description:e.target.value}).eq('id',p.id)
@@ -1336,7 +1376,7 @@ function renderDealerPhotos(){
         <button class="fav-btn ${isFav?'active':''}" data-id="${p.id}" title="${isFav?'Remove from favorites':'Add to favorites'}">${isFav?'♥':'♡'}</button>
       </div>
       <div class="card-footer">
-        <div class="price">${p.price||'Price TBD'}${newBadge}${timeBadge}</div>
+        <div class="price">${p.price||'Price TBD'}${p.negotiable?' <span style="font-size:10px;color:#8B7355;font-weight:400;">negotiable</span>':''}${newBadge}${timeBadge}</div>
         <div class="desc">${p.description||'No description'}</div>
         <div class="seller-row">${avHtml}<span class="seller-tag">${s?s.name:'Unknown'}</span></div>
       </div>`
@@ -1396,7 +1436,7 @@ function renderSellersList(){
         item.innerHTML=`
           <div class="s-ph">${img}</div>
           <div class="s-info">
-            <div class="s-price">${p.price||'TBD'}</div>
+            <div class="s-price">${p.price||'TBD'}${p.negotiable?' <span style="font-size:9px;color:#8B7355;">neg.</span>':''}</div>
             <div class="s-desc">${p.description||'No description'}</div>
             <div style="font-size:10px;color:#bbb;margin-top:2px;">${ago(p.created_at)}</div>
           </div>`
@@ -1416,7 +1456,15 @@ function openModal(pid){
   const s=p.profiles||APP.sellers.find(u=>u.id===p.seller_id)
   APP.viewing=p
   el('modal-price').textContent=p.price||'—'
+  const negEl = el('modal-negotiable')
+  if(negEl) negEl.style.display = p.negotiable ? 'block' : 'none'
   el('modal-desc').textContent=p.description||'No description provided.'
+  // Increment view count for dealers
+  if(APP.profile&&APP.profile.type==='dealer'){
+    sb.from('submissions').update({view_count:(p.view_count||0)+1}).eq('id',p.id).then(()=>{
+      p.view_count=(p.view_count||0)+1
+    })
+  }
   el('modal-seller-name').textContent=s?s.name:'—'
   el('modal-seller-phone').textContent=s?s.phone:'—'
   el('modal-seller-addr').textContent=s?s.address:'—'
