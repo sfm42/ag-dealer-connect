@@ -2278,14 +2278,7 @@ function populateSettingsForm(){
   if(expEnabled) expEnabled.checked = SETTINGS.expiry_notice_enabled !== 'false'
   if(expSubject) expSubject.value = SETTINGS.expiry_notice_subject || 'Your AG Dealer Connect listing is expiring soon'
   if(expMessage){
-    expMessage.value = SETTINGS.expiry_notice_message || 'Hi {name},
-
-Your listing "{item}" has {days} days remaining before it is automatically removed.
-
-Log in to republish it and keep it visible to our dealer network.
-
-Thank you,
-The Antique Gatherings Team'
+    expMessage.value = SETTINGS.expiry_notice_message || 'Hi {name},\n\nYour listing "{item}" has {days} days remaining before it is automatically removed.\n\nLog in to republish it and keep it visible to our dealer network.\n\nThank you,\nThe Antique Gatherings Team'
     expMessage.addEventListener('input', updateExpiryPreview)
     updateExpiryPreview()
   }
@@ -2356,7 +2349,7 @@ window.startPayment = async function(submissionId, type){
   const days = type==='republish' ? SETTINGS.republish_days||'45' : SETTINGS.promote_days||'7'
   const label = type==='republish' ? 'Republish' : 'Promote'
 
-  if(!confirm(label + ' this listing for $' + price + '? This will ' + (type==='republish' ? 'reset your listing clock for '+days+' more days' : 'place your item at the top of the dealer feed for '+days+' days') + '.'))
+  if(!confirm(label + ' this listing for $' + price + '? This will ' + (type==='republish' ? 'reset your listing clock for '+days+' more days' : 'place your item at the top of the dealer feed for '+days+' days') + '.')){
     return
   }
 
