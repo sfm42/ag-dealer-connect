@@ -679,6 +679,7 @@ img { transition: opacity 0.3s ease; }
     <button class="admin-tab" onclick="window.adminTab&&window.adminTab('sellers')">Sellers</button>
     <button class="admin-tab" onclick="window.adminTab&&window.adminTab('photos')">All submissions</button>
     <button class="admin-tab" onclick="window.adminTab&&window.adminTab('broadcast')">📣 Broadcast</button>
+    <button class="admin-tab" onclick="window.adminTab&&window.adminTab('settings')">⚙️ Settings</button>
   </div>
   <div class="dash-content" style="padding-top:1.5rem;">
     <div id="admin-dealers" class="admin-panel active">
@@ -780,6 +781,149 @@ img { transition: opacity 0.3s ease; }
         <button id="modal-fav-btn" class="btn" onclick="window.modalToggleFav&&window.modalToggleFav()" style="font-size:14px;">♡ Add to favorites</button>
       </div>
       </div>
+    <!-- SETTINGS PANEL -->
+    <div id="admin-settings" class="admin-panel">
+      <div style="max-width:700px;display:flex;flex-direction:column;gap:1.5rem;">
+
+        <!-- REPUBLISH SETTINGS -->
+        <div style="background:#fff;border:0.5px solid rgba(0,0,0,0.12);border-radius:12px;overflow:hidden;">
+          <div style="padding:1rem 1.5rem;border-bottom:0.5px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <h3 style="font-size:15px;font-weight:500;">🔄 Republish</h3>
+              <p style="font-size:12px;color:#888;margin-top:2px;">Allows sellers to reset their 45-day listing clock for a fee</p>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <span style="font-size:12px;color:#888;">Enabled</span>
+              <input type="checkbox" id="s-republish-enabled" style="width:16px;height:16px;accent-color:#8B7355;cursor:pointer;">
+            </label>
+          </div>
+          <div style="padding:1.25rem 1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Price (USD)</label>
+              <div style="display:flex;align-items:center;border:0.5px solid rgba(0,0,0,0.22);border-radius:8px;overflow:hidden;background:#fff;">
+                <span style="padding:8px 10px;color:#888;font-size:14px;border-right:0.5px solid rgba(0,0,0,0.12);background:#f9f7f4;">$</span>
+                <input type="number" id="s-republish-price" min="0" step="0.50" placeholder="5.00" style="border:none;outline:none;padding:8px 10px;font-size:14px;font-family:inherit;width:100%;background:#fff;">
+              </div>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Duration (days)</label>
+              <select id="s-republish-days" style="width:100%;padding:8px 12px;border:0.5px solid rgba(0,0,0,0.22);border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;">
+                <option value="7">7 days</option>
+                <option value="14">14 days</option>
+                <option value="30">30 days</option>
+                <option value="45">45 days</option>
+                <option value="60">60 days</option>
+                <option value="90">90 days</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROMOTE SETTINGS -->
+        <div style="background:#fff;border:0.5px solid rgba(0,0,0,0.12);border-radius:12px;overflow:hidden;">
+          <div style="padding:1rem 1.5rem;border-bottom:0.5px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <h3 style="font-size:15px;font-weight:500;">⭐ Promote</h3>
+              <p style="font-size:12px;color:#888;margin-top:2px;">Sellers pay to appear at the top of the dealer feed in rotation</p>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <span style="font-size:12px;color:#888;">Enabled</span>
+              <input type="checkbox" id="s-promote-enabled" style="width:16px;height:16px;accent-color:#8B7355;cursor:pointer;">
+            </label>
+          </div>
+          <div style="padding:1.25rem 1.5rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Price (USD)</label>
+              <div style="display:flex;align-items:center;border:0.5px solid rgba(0,0,0,0.22);border-radius:8px;overflow:hidden;background:#fff;">
+                <span style="padding:8px 10px;color:#888;font-size:14px;border-right:0.5px solid rgba(0,0,0,0.12);background:#f9f7f4;">$</span>
+                <input type="number" id="s-promote-price" min="0" step="0.50" placeholder="10.00" style="border:none;outline:none;padding:8px 10px;font-size:14px;font-family:inherit;width:100%;background:#fff;">
+              </div>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Duration (days)</label>
+              <select id="s-promote-days" style="width:100%;padding:8px 12px;border:0.5px solid rgba(0,0,0,0.22);border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;">
+                <option value="3">3 days</option>
+                <option value="7">7 days</option>
+                <option value="14">14 days</option>
+                <option value="30">30 days</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Max promoted slots</label>
+              <select id="s-promote-slots" style="width:100%;padding:8px 12px;border:0.5px solid rgba(0,0,0,0.22);border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;">
+                <option value="1">1 slot</option>
+                <option value="2">2 slots</option>
+                <option value="3">3 slots</option>
+                <option value="5">5 slots</option>
+                <option value="10">10 slots</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXPIRY NOTICE SETTINGS -->
+        <div style="background:#fff;border:0.5px solid rgba(0,0,0,0.12);border-radius:12px;overflow:hidden;">
+          <div style="padding:1rem 1.5rem;border-bottom:0.5px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <h3 style="font-size:15px;font-weight:500;">⏰ Expiry notices</h3>
+              <p style="font-size:12px;color:#888;margin-top:2px;">Automatically email sellers when their listing is approaching deletion</p>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <span style="font-size:12px;color:#888;">Enabled</span>
+              <input type="checkbox" id="s-expiry-enabled" style="width:16px;height:16px;accent-color:#8B7355;cursor:pointer;">
+            </label>
+          </div>
+          <div style="padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:1rem;">
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:12px;color:#666;display:block;margin-bottom:6px;">Send notices at these thresholds (days before expiry)</label>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;" id="threshold-checkboxes">
+                <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:0.5px solid rgba(0,0,0,0.2);border-radius:99px;cursor:pointer;font-size:13px;">
+                  <input type="checkbox" class="threshold-cb" value="14" style="accent-color:#8B7355;"> 14 days
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:0.5px solid rgba(0,0,0,0.2);border-radius:99px;cursor:pointer;font-size:13px;">
+                  <input type="checkbox" class="threshold-cb" value="7" style="accent-color:#8B7355;"> 7 days
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:0.5px solid rgba(0,0,0,0.2);border-radius:99px;cursor:pointer;font-size:13px;">
+                  <input type="checkbox" class="threshold-cb" value="5" style="accent-color:#8B7355;"> 5 days
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:0.5px solid rgba(0,0,0,0.2);border-radius:99px;cursor:pointer;font-size:13px;">
+                  <input type="checkbox" class="threshold-cb" value="3" style="accent-color:#8B7355;"> 3 days
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:0.5px solid rgba(0,0,0,0.2);border-radius:99px;cursor:pointer;font-size:13px;">
+                  <input type="checkbox" class="threshold-cb" value="1" style="accent-color:#8B7355;"> 1 day
+                </label>
+              </div>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">Email subject</label>
+              <input type="text" id="s-expiry-subject" style="width:100%;padding:8px 12px;border:0.5px solid rgba(0,0,0,0.22);border-radius:8px;font-size:14px;font-family:inherit;outline:none;" placeholder="Your listing is expiring soon">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:12px;color:#666;display:block;margin-bottom:4px;">
+                Email message
+                <span style="color:#8B7355;font-weight:400;"> — use {name} for seller name, {item} for item description, {days} for days remaining</span>
+              </label>
+              <textarea id="s-expiry-message" style="width:100%;padding:8px 12px;border:0.5px solid rgba(0,0,0,0.22);border-radius:8px;font-size:13px;font-family:inherit;outline:none;resize:vertical;min-height:140px;line-height:1.6;"></textarea>
+            </div>
+            <div style="background:#f9f7f4;border-radius:8px;padding:10px 14px;">
+              <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:6px;">📧 Preview</div>
+              <div id="expiry-preview" style="font-size:12px;color:#666;line-height:1.6;white-space:pre-wrap;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SAVE BUTTON -->
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="btn primary" id="save-settings-btn" onclick="window.saveSettings&&window.saveSettings()" style="padding:11px 28px;font-size:15px;">
+            Save all settings
+          </button>
+          <div id="settings-saved-msg" style="display:none;color:#3B6D11;font-size:13px;">✅ Settings saved successfully</div>
+          <div id="settings-error-msg" style="display:none;color:#E24B4A;font-size:13px;"></div>
+        </div>
+
+      </div>
+    </div>
+
     </div>
   </div>
 </div>
@@ -1687,10 +1831,11 @@ async function loadAdmin(){
 }
 
 window.adminTab = function(n){
-  document.querySelectorAll('.admin-tab').forEach((t,i)=>t.classList.toggle('active',['dealers','sellers','photos','broadcast'][i]===n))
+  document.querySelectorAll('.admin-tab').forEach((t,i)=>t.classList.toggle('active',['dealers','sellers','photos','broadcast','settings'][i]===n))
   document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'))
   el('admin-'+n).classList.add('active')
   if(n==='broadcast') initBroadcast()
+  if(n==='settings') loadSettings()
 }
 
 function renderAdminDealers(){
@@ -2008,6 +2153,120 @@ document.addEventListener('keydown', e=>{
     window.submitWithPrice&&window.submitWithPrice()
   }
 })
+
+
+// ---- SETTINGS ----
+const SETTINGS = {}
+
+async function loadSettings(){
+  try{
+    const{data,error}=await sb.from('site_settings').select('*')
+    if(error)throw error
+    data.forEach(row=>{ SETTINGS[row.key]=row.value })
+    populateSettingsForm()
+  }catch(e){
+    console.warn('Failed to load settings:', e)
+    // Use defaults if settings table not yet created
+    populateSettingsForm()
+  }
+}
+
+function populateSettingsForm(){
+  // Republish
+  const repEnabled = el('s-republish-enabled')
+  const repPrice = el('s-republish-price')
+  const repDays = el('s-republish-days')
+  if(repEnabled) repEnabled.checked = SETTINGS.republish_enabled !== 'false'
+  if(repPrice) repPrice.value = SETTINGS.republish_price || '5.00'
+  if(repDays) repDays.value = SETTINGS.republish_days || '45'
+
+  // Promote
+  const proEnabled = el('s-promote-enabled')
+  const proPrice = el('s-promote-price')
+  const proDays = el('s-promote-days')
+  const proSlots = el('s-promote-slots')
+  if(proEnabled) proEnabled.checked = SETTINGS.promote_enabled !== 'false'
+  if(proPrice) proPrice.value = SETTINGS.promote_price || '10.00'
+  if(proDays) proDays.value = SETTINGS.promote_days || '7'
+  if(proSlots) proSlots.value = SETTINGS.promote_max_slots || '3'
+
+  // Expiry notices
+  const expEnabled = el('s-expiry-enabled')
+  const expSubject = el('s-expiry-subject')
+  const expMessage = el('s-expiry-message')
+  if(expEnabled) expEnabled.checked = SETTINGS.expiry_notice_enabled !== 'false'
+  if(expSubject) expSubject.value = SETTINGS.expiry_notice_subject || 'Your AG Dealer Connect listing is expiring soon'
+  if(expMessage){
+    expMessage.value = SETTINGS.expiry_notice_message || 'Hi {name},
+
+Your listing "{item}" has {days} days remaining before it is automatically removed.
+
+Log in to republish it and keep it visible to our dealer network.
+
+Thank you,
+The Antique Gatherings Team'
+    expMessage.addEventListener('input', updateExpiryPreview)
+    updateExpiryPreview()
+  }
+
+  // Thresholds
+  const thresholds = (SETTINGS.expiry_notice_thresholds || '7,3').split(',')
+  document.querySelectorAll('.threshold-cb').forEach(cb=>{
+    cb.checked = thresholds.includes(cb.value)
+  })
+}
+
+function updateExpiryPreview(){
+  const msg = el('s-expiry-message')?.value || ''
+  const preview = el('expiry-preview')
+  if(!preview) return
+  preview.textContent = msg
+    .replace(/{name}/g, 'Jane Smith')
+    .replace(/{item}/g, 'Vintage oak dresser')
+    .replace(/{days}/g, '7')
+}
+
+window.saveSettings = async function(){
+  const btn = el('save-settings-btn')
+  const savedMsg = el('settings-saved-msg')
+  const errMsg = el('settings-error-msg')
+  savedMsg.style.display='none'
+  errMsg.style.display='none'
+  btn.disabled=true
+  btn.innerHTML='<span class="spinner"></span>Saving...'
+
+  // Collect thresholds
+  const thresholds = [...document.querySelectorAll('.threshold-cb:checked')].map(cb=>cb.value).join(',')
+
+  const updates = [
+    {key:'republish_enabled', value: el('s-republish-enabled')?.checked?'true':'false'},
+    {key:'republish_price', value: el('s-republish-price')?.value||'5.00'},
+    {key:'republish_days', value: el('s-republish-days')?.value||'45'},
+    {key:'promote_enabled', value: el('s-promote-enabled')?.checked?'true':'false'},
+    {key:'promote_price', value: el('s-promote-price')?.value||'10.00'},
+    {key:'promote_days', value: el('s-promote-days')?.value||'7'},
+    {key:'promote_max_slots', value: el('s-promote-slots')?.value||'3'},
+    {key:'expiry_notice_enabled', value: el('s-expiry-enabled')?.checked?'true':'false'},
+    {key:'expiry_notice_thresholds', value: thresholds||'7'},
+    {key:'expiry_notice_subject', value: el('s-expiry-subject')?.value||''},
+    {key:'expiry_notice_message', value: el('s-expiry-message')?.value||''},
+  ]
+
+  try{
+    for(const u of updates){
+      await sb.from('site_settings').upsert({key:u.key, value:u.value, updated_at:new Date().toISOString()})
+      SETTINGS[u.key]=u.value
+    }
+    savedMsg.style.display='block'
+    setTimeout(()=>savedMsg.style.display='none', 3000)
+  }catch(e){
+    errMsg.textContent='Save failed: '+e.message
+    errMsg.style.display='block'
+  }finally{
+    btn.disabled=false
+    btn.textContent='Save all settings'
+  }
+}
 
 ;(async()=>{
   const{data:{session}}=await sb.auth.getSession()
