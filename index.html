@@ -381,6 +381,28 @@ img { transition: opacity 0.3s ease; }
 .fav-empty h3 { font-size:16px; font-weight:500; margin-bottom:0.5rem; color:#555; }
 .fav-empty p { font-size:13px; }
 
+
+/* PAYMENT BUTTONS */
+.payment-row { display:flex; gap:6px; margin-top:8px; }
+.pay-btn { flex:1; padding:7px 8px; border-radius:8px; border:none; font-size:11px; font-weight:500; cursor:pointer; font-family:inherit; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:4px; }
+.pay-btn.republish { background:#F5F0E8; color:#8B7355; border:0.5px solid #D4C5A9; }
+.pay-btn.republish:hover { background:#E8DDD0; }
+.pay-btn.promote { background:#2C2C2A; color:#fff; }
+.pay-btn.promote:hover { background:#1a1a18; }
+.pay-btn:disabled { opacity:0.5; cursor:not-allowed; }
+.promoted-badge { display:inline-flex; align-items:center; gap:4px; background:#F5F0E8; color:#8B7355; font-size:10px; font-weight:500; padding:2px 8px; border-radius:99px; margin-top:6px; }
+.republished-badge { display:inline-flex; align-items:center; gap:4px; background:#EAF3DE; color:#3B6D11; font-size:10px; font-weight:500; padding:2px 8px; border-radius:99px; margin-top:4px; }
+
+/* PAYMENT SUCCESS TOAST */
+.payment-success-banner { position:fixed; top:1rem; left:50%; transform:translateX(-50%); background:#EAF3DE; border:0.5px solid #9FE1CB; color:#3B6D11; padding:12px 20px; border-radius:10px; font-size:14px; font-weight:500; z-index:600; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+.payment-success-banner.show { display:block; }
+
+/* PROMOTED items in dealer feed */
+.dealer-photo-card.is-promoted { border-color:#D4C5A9; }
+.dealer-photo-card.is-promoted .photo-ph::after { content:'⭐ Promoted'; position:absolute; bottom:6px; left:6px; background:rgba(139,115,85,0.9); color:#fff; font-size:10px; font-weight:500; padding:2px 8px; border-radius:99px; }
+.dealer-photo-card .photo-ph { position:relative; }
+.promoted-section-label { font-size:11px; font-weight:500; color:#8B7355; text-transform:uppercase; letter-spacing:0.08em; padding:0.75rem 0 0.25rem; }
+
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .upload-zone.dragging{border-color:#2C2C2A;background:#F5F0E820;}
@@ -1000,6 +1022,7 @@ img { transition: opacity 0.3s ease; }
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="payment-success-banner" id="payment-success-banner"></div>
 
 <script>
 // Stub functions so onclick handlers don't throw before module loads
@@ -1270,6 +1293,8 @@ async function uploadImg(file,folder='submissions'){
 
 // resend - email sending handled server-side to avoid CORS
 const EDGE_URL = 'https://yrjotpgjljgksoyxhdzx.supabase.co/functions/v1/send-email'
+const STRIPE_URL = 'https://yrjotpgjljgksoyxhdzx.supabase.co/functions/v1/stripe-checkout'
+const STRIPE_PK = 'pk_test_51TqbVIBBs7SKcbFjiZOGJbC4126msXQgnk97tbUZyMguRNhWOty233vS0rrNRBfm6D6YbdzqKBFnA9snU8CIVkSF003r43o4Qo'
 
 // Cloudinary URL optimizer - transforms image URLs to serve smaller versions
 function imgThumb(url, width=400){
@@ -1378,9 +1403,32 @@ function renderSeller(){
         </label>
         <textarea class="desc-in" placeholder="Describe the item...">${p.description||''}</textarea>
         <div class="photo-actions"><button class="btn danger sm del-btn">Delete</button></div>
+        <div class="payment-row" id="pay-row-${p.id}"></div>
       </div>`
     const sellerPhImg = card.querySelector('.photo-ph img')
     if(sellerPhImg){ sellerPhImg.style.cursor='zoom-in'; sellerPhImg.addEventListener('click',()=>openLightbox(p.image_url)) }
+
+    // Add payment buttons based on settings
+    const payRow = card.querySelector('.payment-row')
+    if(payRow && SETTINGS.republish_enabled !== 'false'){
+      const isPromoted = p.is_promoted && p.promoted_until && new Date(p.promoted_until) > new Date()
+      const repBtn = document.createElement('button')
+      repBtn.className='pay-btn republish'
+      repBtn.innerHTML=`🔄 Republish $${SETTINGS.republish_price||'5.00'}`
+      repBtn.title=`Reset your listing clock for another ${SETTINGS.republish_days||45} days`
+      repBtn.addEventListener('click',()=>startPayment(p.id,'republish'))
+      payRow.appendChild(repBtn)
+
+      if(SETTINGS.promote_enabled !== 'false'){
+        const proBtn = document.createElement('button')
+        proBtn.className='pay-btn promote'
+        proBtn.innerHTML= isPromoted ? `⭐ Promoted` : `⭐ Promote $${SETTINGS.promote_price||'10.00'}`
+        proBtn.disabled = isPromoted
+        proBtn.title = isPromoted ? `Promoted until ${new Date(p.promoted_until).toLocaleDateString()}` : `Appear at the top of the dealer feed for ${SETTINGS.promote_days||7} days`
+        if(!isPromoted) proBtn.addEventListener('click',()=>startPayment(p.id,'promote'))
+        payRow.appendChild(proBtn)
+      }
+    }
     // Price - required validation
     card.querySelector('.price-in').addEventListener('change',async e=>{
       const val = e.target.value.trim()
@@ -1633,12 +1681,45 @@ window.photosFilter = function(f){
 }
 
 function renderDealerPhotos(){
-  const ph=APP.filter==='new'?APP.submissions.filter(p=>(Date.now()-new Date(p.created_at).getTime())<24*60*60*1000):APP.submissions
+  let ph=APP.filter==='new'?APP.submissions.filter(p=>(Date.now()-new Date(p.created_at).getTime())<24*60*60*1000):APP.submissions
+
+  // Separate promoted items and show them first
+  const now = new Date()
+  const promoted = ph.filter(p=>p.is_promoted && p.promoted_until && new Date(p.promoted_until) > now)
+  const regular = ph.filter(p=>!p.is_promoted || !p.promoted_until || new Date(p.promoted_until) <= now)
+
+  // Shuffle promoted items randomly
+  for(let i=promoted.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[promoted[i],promoted[j]]=[promoted[j],promoted[i]]}
+
+  // Get max slots from settings
+  const maxSlots = parseInt(SETTINGS.promote_max_slots||'3')
+  const shownPromoted = promoted.slice(0, maxSlots)
+  ph = [...shownPromoted, ...regular]
+
   const grid=el('dealer-photos-grid')
   el('photos-view-count').textContent=APP.filter==='new'?`${ph.length} new submission${ph.length!==1?'s':''}`:`${APP.submissions.length} submission${APP.submissions.length!==1?'s':''} · newest first`
   if(!ph.length){grid.innerHTML='<div class="empty-state">No submissions found.</div>';return}
   grid.innerHTML=''
-  ph.forEach(p=>{
+
+  // Add promoted section label if there are promoted items
+  if(shownPromoted.length > 0 && APP.filter !== 'new'){
+    const label = document.createElement('div')
+    label.className='promoted-section-label'
+    label.style.gridColumn='1/-1'
+    label.textContent='⭐ Featured listings'
+    grid.appendChild(label)
+  }
+
+  ph.forEach((p,idx)=>{
+    // Add regular listings divider after promoted
+    if(shownPromoted.length > 0 && idx === shownPromoted.length && APP.filter !== 'new'){
+      const divider = document.createElement('div')
+      divider.className='promoted-section-label'
+      divider.style.gridColumn='1/-1'
+      divider.style.color='#aaa'
+      divider.textContent='All submissions — newest first'
+      grid.appendChild(divider)
+    }
     const s=p.profiles
     const card=document.createElement('div')
     card.className='dealer-photo-card'
@@ -2268,9 +2349,104 @@ window.saveSettings = async function(){
   }
 }
 
+
+// ---- STRIPE PAYMENTS ----
+window.startPayment = async function(submissionId, type){
+  const price = type==='republish' ? SETTINGS.republish_price||'5.00' : SETTINGS.promote_price||'10.00'
+  const days = type==='republish' ? SETTINGS.republish_days||'45' : SETTINGS.promote_days||'7'
+  const label = type==='republish' ? 'Republish' : 'Promote'
+
+  if(!confirm(label + ' this listing for $' + price + '? This will ' + (type==='republish' ? 'reset your listing clock for '+days+' more days' : 'place your item at the top of the dealer feed for '+days+' days') + '.'))
+    return
+  }
+
+  window.toast('Redirecting to checkout...')
+
+  try{
+    const res = await fetch(STRIPE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'create_checkout',
+        submission_id: submissionId,
+        seller_id: APP.profile.id,
+        type
+      })
+    })
+    const data = await res.json()
+    if(data.error) throw new Error(data.error)
+    if(data.url) window.location.href = data.url
+  }catch(e){
+    window.toast('Payment failed to start: '+e.message)
+  }
+}
+
+// Handle payment return from Stripe
+async function handlePaymentReturn(){
+  const params = new URLSearchParams(window.location.search)
+  const status = params.get('payment')
+  const type = params.get('type')
+  const submissionId = params.get('submission_id')
+  const paymentId = params.get('payment_id')
+
+  if(!status) return
+
+  // Clean URL
+  window.history.replaceState({}, '', window.location.pathname)
+
+  if(status === 'success' && paymentId){
+    // Activate the payment
+    try{
+      await fetch(STRIPE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'activate',
+          payment_id: paymentId,
+          submission_id: submissionId,
+          type
+        })
+      })
+
+      // Show success banner
+      const banner = document.getElementById('payment-success-banner')
+      if(banner){
+        banner.textContent = type==='republish'
+          ? '✅ Your listing has been republished successfully!'
+          : '⭐ Your listing is now promoted and appearing at the top of the dealer feed!'
+        banner.classList.add('show')
+        setTimeout(()=>banner.classList.remove('show'), 5000)
+      }
+
+      // Send confirmation email to seller
+      try{
+        await sendEdgeEmail('payment_confirmation',{
+          name: APP.profile.name,
+          email: APP.user.email,
+          type,
+          price: type==='republish' ? SETTINGS.republish_price : SETTINGS.promote_price,
+          days: type==='republish' ? SETTINGS.republish_days : SETTINGS.promote_days
+        })
+      }catch(e){}
+
+    }catch(e){
+      window.toast('Could not activate payment. Please contact support.')
+    }
+  } else if(status === 'cancelled'){
+    window.toast('Payment cancelled.')
+  }
+}
+
 ;(async()=>{
   const{data:{session}}=await sb.auth.getSession()
-  if(session)await route(session.user)
+  if(session){
+    await route(session.user)
+    // Handle Stripe payment return
+    await handlePaymentReturn()
+  } else {
+    // Check for payment return even if not logged in (shouldn't happen but handle gracefully)
+    handlePaymentReturn()
+  }
 })()
 </script>
 </body>
