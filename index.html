@@ -18,7 +18,7 @@ body { font-family: system-ui, sans-serif; background: #0D0A06; color: #D4C8B8; 
 .nav-actions { display: flex; align-items: center; gap: 8px; }
 .btn { padding: 7px 16px; border-radius: 8px; border: 0.5px solid rgba(0,0,0,0.25); background: transparent; color: #D4C8B8; font-size: 14px; cursor: pointer; transition: background 0.15s; font-family: inherit; }
 .btn:hover { background: #201A0A; }
-.btn.primary { background: #1A1408; color: #fff; border-color: #1A1408; }
+.btn.primary { background: #1A1408; color: #fff; border-color: #C9A84C; }
 .btn.primary:hover { background: #0D0A06; }
 .btn.danger { border-color: #E24B4A; color: #E24B4A; }
 .btn.danger:hover { background: #FCEBEB; }
@@ -53,7 +53,7 @@ body { font-family: system-ui, sans-serif; background: #0D0A06; color: #D4C8B8; 
 
 .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 500; }
 .badge.seller { background: #E1F5EE; color: #0F6E56; }
-.badge.dealer { background: #252530; color: #1A1408; }
+.badge.dealer { background: #252530; color: #C9A84C; }
 .badge.admin { background: #FAEEDA; color: #854F0B; }
 .badge.pending { background: #FAEEDA; color: #854F0B; }
 .badge.approved { background: #EAF3DE; color: #3B6D11; }
@@ -77,7 +77,7 @@ body { font-family: system-ui, sans-serif; background: #0D0A06; color: #D4C8B8; 
 .dealer-landing { flex: 1; display: flex; flex-direction: column; }
 .dealer-view-tabs { background: #1A1408; border-bottom: 0.5px solid rgba(255,255,255,0.1); padding: 0 1.5rem; display: flex; gap: 0; }
 .dealer-view-tab { padding: 14px 20px; font-size: 14px; border: none; background: none; cursor: pointer; color: #7A6A5A; border-bottom: 2px solid transparent; margin-bottom: -0.5px; font-family: inherit; font-weight: 400; transition: color 0.15s; white-space: nowrap; }
-.dealer-view-tab.active { color: #1A1408; border-bottom-color: #C9A84C; font-weight: 500; }
+.dealer-view-tab.active { color: #C9A84C; border-bottom-color: #C9A84C; font-weight: 600; }
 .dealer-view-tab:hover:not(.active) { color: #C9A84C; }
 .dealer-view-content { display: none; flex: 1; }
 .dealer-view-content.active { display: flex; flex-direction: column; }
@@ -86,7 +86,7 @@ body { font-family: system-ui, sans-serif; background: #0D0A06; color: #D4C8B8; 
 .photos-toolbar h3 { font-size: 15px; font-weight: 500; color: #C8BCA8; }
 .sort-pill-group { display: flex; gap: 6px; }
 .sort-pill { padding: 5px 14px; border-radius: 99px; font-size: 13px; border: 0.5px solid rgba(0,0,0,0.2); background: transparent; cursor: pointer; font-family: inherit; color: #9A8A7A; transition: all 0.15s; }
-.sort-pill.active { background: #1A1408; color: #fff; border-color: #1A1408; }
+.sort-pill.active { background: #C9A84C; color: #0D0A06; border-color: #C9A84C; font-weight: 500; }
 .dash-content { flex: 1; padding: 1rem 1.5rem 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; }
 
 .sellers-list { display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem; max-width: 900px; margin: 0 auto; width: 100%; }
@@ -97,7 +97,7 @@ body { font-family: system-ui, sans-serif; background: #0D0A06; color: #D4C8B8; 
 .seller-card-meta h3 { font-size: 15px; font-weight: 500; }
 .seller-card-meta p { font-size: 13px; color: #7A6A5A; margin-top: 2px; }
 .seller-card-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.photo-count-badge { background: #252530; color: #1A1408; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 99px; }
+.photo-count-badge { background: #252530; color: #C9A84C; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 99px; }
 .latest-badge { background: #EAF3DE; color: #3B6D11; font-size: 11px; padding: 3px 8px; border-radius: 99px; }
 .chevron { font-size: 18px; color: #bbb; transition: transform 0.2s; display: inline-block; }
 .chevron.open { transform: rotate(90deg); }
@@ -117,7 +117,7 @@ body { font-family: system-ui, sans-serif; background: #0D0A06; color: #D4C8B8; 
 .dealer-photo-card:hover { border-color: rgba(0,0,0,0.35); }
 .dealer-photo-card .photo-ph { width: 100%; height: 130px; display: flex; align-items: center; justify-content: center; font-size: 36px; overflow: hidden; }
 .dealer-photo-card .card-footer { padding: 10px 12px; }
-.dealer-photo-card .card-footer .price { font-size: 15px; font-weight: 500; color: #1A1408; }
+.dealer-photo-card .card-footer .price { font-size: 15px; font-weight: 500; color: #C9A84C; }
 .dealer-photo-card .card-footer .desc { font-size: 12px; color: #7A6A5A; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dealer-photo-card .card-footer .seller-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
 .dealer-photo-card .card-footer .seller-tag { font-size: 11px; color: #aaa; }
@@ -161,7 +161,7 @@ body { font-family: system-ui, sans-serif; background: #0D0A06; color: #D4C8B8; 
 
 .admin-tabs { display: flex; background: #1A1408; gap: 4px; padding: 0 1.5rem; border-bottom: 0.5px solid rgba(255,255,255,0.1); background: #fff; }
 .admin-tab { padding: 12px 16px; font-size: 14px; border: none; background: none; cursor: pointer; color: #7A6A5A; border-bottom: 2px solid transparent; margin-bottom: -0.5px; font-family: inherit; }
-.admin-tab.active { color: #1A1408; border-bottom-color: #C9A84C; font-weight: 500; }
+.admin-tab.active { color: #C9A84C; border-bottom-color: #C9A84C; font-weight: 500; }
 .admin-panel { display: none; }
 .admin-panel.active { display: block; }
 .table-wrap { background: #1A1408; border: 0.5px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; }
