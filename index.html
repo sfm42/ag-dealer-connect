@@ -330,7 +330,7 @@ img { transition: opacity 0.3s ease; }
 
 
 /* MODAL BACK BUTTON */
-.modal-back-btn { display:none; align-items:center; gap:6px; background:none; border:none; font-size:15px; font-weight:500; color:#1A1408; cursor:pointer; padding:4px 8px 4px 0; font-family:inherit; }
+.modal-back-btn { display:none; align-items:center; gap:6px; background:none; border:none; font-size:15px; font-weight:500; color:#C9A84C; cursor:pointer; padding:4px 8px 4px 0; font-family:inherit; }
 .modal-back-btn svg { flex-shrink:0; }
 .modal-back-btn:hover { color:#C9A84C; }
 .zoom-hint { font-size:11px; color:#aaa; }
@@ -338,8 +338,8 @@ img { transition: opacity 0.3s ease; }
 
 @media (max-width:768px) {
   /* Show back button, hide X on mobile */
-  .modal-back-btn { display:flex; }
-  .modal-close { display:none; }
+  .modal-back-btn { display:flex !important; }
+  .modal-close { display:none !important; }
   .zoom-hint { display:none; }
 
   /* Full screen modal on mobile */
@@ -364,7 +364,7 @@ img { transition: opacity 0.3s ease; }
 @media (min-width:769px) {
   /* Desktop - hide back button, show X */
   .modal-back-btn { display:none !important; }
-  .modal-close { display:flex; }
+  .modal-close { display:flex !important; }
 }
 
 
@@ -1205,7 +1205,7 @@ tr:last-child td { border-bottom: none; }
 <div class="modal-overlay" id="photo-modal">
   <div class="modal">
     <div class="modal-header">
-      <button class="modal-back-btn" onclick="window.closeModal&&window.closeModal()">
+      <button class="modal-back-btn" onclick="window.closeModal&&window.closeModal()" style="color:#C9A84C;">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
         Back
       </button>
@@ -2523,15 +2523,36 @@ window.addEventListener('popstate', function(e){
   const photoModal = el('photo-modal')
   const lightbox = el('lightbox')
   const priceModal = el('price-modal')
+  const termsOverlay = el('terms-overlay')
   if(lightbox && lightbox.classList.contains('open')){
     lightbox.classList.remove('open')
     document.body.style.overflow=''
   } else if(photoModal && photoModal.classList.contains('open')){
     photoModal.classList.remove('open')
+    document.body.style.overflow=''
   } else if(priceModal && priceModal.classList.contains('open')){
     window.cancelPriceModal()
+  } else if(termsOverlay && termsOverlay.classList.contains('open')){
+    window.closeTerms()
   }
 })
+
+// Android WebView interface - allows native back button to work
+window.onBackPressed = function(){
+  const photoModal = el('photo-modal')
+  const lightbox = el('lightbox')
+  if(lightbox && lightbox.classList.contains('open')){
+    lightbox.classList.remove('open')
+    document.body.style.overflow=''
+    return true
+  }
+  if(photoModal && photoModal.classList.contains('open')){
+    photoModal.classList.remove('open')
+    document.body.style.overflow=''
+    return true
+  }
+  return false
+}
 
 
 // ---- BROADCAST ----
