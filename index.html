@@ -559,6 +559,78 @@ tr:last-child td { border-bottom: none; }
 }
 .blocked-email-item:last-child { border-bottom: none; }
 
+
+/* FOOTER */
+.site-footer { 
+  background: #0D0A06; 
+  border-top: 0.5px solid rgba(201,168,76,0.2);
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+}
+.site-footer a { 
+  color: #C9A84C; 
+  text-decoration: none; 
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  transition: text-shadow 0.2s;
+}
+.site-footer a:hover { 
+  text-shadow: 0 0 10px rgba(201,168,76,0.5);
+}
+.site-footer p {
+  color: #5A4A3A;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+/* TERMS MODAL */
+.terms-overlay {
+  position: fixed; inset: 0;
+  background: rgba(5,3,0,0.92);
+  z-index: 300;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem;
+  overflow-y: auto;
+  backdrop-filter: blur(4px);
+}
+.terms-overlay.open { display: flex; }
+.terms-modal {
+  background: #1A1408;
+  border: 0.5px solid rgba(201,168,76,0.25);
+  border-radius: 12px;
+  max-width: 760px;
+  width: 100%;
+  padding: 2.5rem;
+  position: relative;
+  box-shadow: 0 0 40px rgba(201,168,76,0.08);
+}
+.terms-modal h1 { font-size: 22px; font-weight: 600; color: #C9A84C; margin-bottom: 0.5rem; text-shadow: 0 0 15px rgba(201,168,76,0.3); }
+.terms-modal h2 { font-size: 16px; font-weight: 600; color: #C9A84C; margin: 1.5rem 0 0.5rem; }
+.terms-modal h3 { font-size: 14px; font-weight: 600; color: #D4C8B8; margin: 1rem 0 0.35rem; }
+.terms-modal p { font-size: 13px; color: #9A8A7A; line-height: 1.7; margin-bottom: 0.75rem; }
+.terms-modal ul { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+.terms-modal li { font-size: 13px; color: #9A8A7A; line-height: 1.7; margin-bottom: 0.25rem; }
+.terms-modal strong { color: #D4C8B8; }
+.terms-modal em { color: #C9A84C; font-style: normal; }
+.terms-modal hr { border: none; border-top: 0.5px solid rgba(201,168,76,0.15); margin: 1.5rem 0; }
+.terms-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  background: rgba(201,168,76,0.1);
+  border: 0.5px solid rgba(201,168,76,0.3);
+  color: #C9A84C;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  margin-bottom: 1rem;
+}
+.terms-close:hover { background: rgba(201,168,76,0.2); }
+
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .upload-zone.dragging{border-color:#1A1408;background:#FBF7EC20;}
@@ -577,6 +649,10 @@ tr:last-child td { border-bottom: none; }
       <button class="btn primary" onclick="window.showScreen&&window.showScreen('screen-login')">Log in</button>
       <button class="btn" onclick="window.showScreen&&window.showScreen('screen-signup')">Sign up</button>
     </div>
+  </div>
+  <div class="site-footer">
+    <a href="#" onclick="openTerms();return false;">Terms &amp; Conditions</a>
+    <p>&copy; 2026 Antyke High Street. All rights reserved.</p>
   </div>
 </div>
 
@@ -778,6 +854,10 @@ tr:last-child td { border-bottom: none; }
     <div id="seller-photos-grid" class="photos-grid">
       <div class="empty-state">No submissions yet — upload your first item above.</div>
     </div>
+  </div>
+  <div class="site-footer">
+    <a href="#" onclick="openTerms();return false;">Terms &amp; Conditions</a>
+    <p>&copy; 2026 Antyke High Street. All rights reserved.</p>
   </div>
 </div>
 
@@ -1229,6 +1309,70 @@ tr:last-child td { border-bottom: none; }
   <p id="blocked-message">Your account has been suspended. If you believe this is an error please contact support.</p>
   <div class="contact">sfm9497@gmail.com</div>
   <button class="btn" onclick="window.logout&&window.logout()" style="margin-top:1.5rem;border-color:rgba(201,168,76,0.3);color:#C9A84C;">Log out</button>
+</div>
+
+
+<!-- TERMS MODAL -->
+<div class="terms-overlay" id="terms-overlay" onclick="if(event.target===this)closeTerms()">
+  <div class="terms-modal">
+    <button class="terms-close" onclick="closeTerms()">✕ Close</button>
+    <div id="terms-content">
+<p><h1>Terms and Conditions</h1></p><p><strong>Antyke High Street — Dealer Connect</strong>
+<strong>Effective Date:</strong> July 30, 2026
+<strong>Last Updated:</strong> July 30, 2026</p><p><hr></p><p><h2>1. Acceptance of Terms</h2></p><p>By accessing or using Dealer Connect at submit.antykehighstreet.com ("the Platform"), you agree to be bound by these Terms and Conditions. If you do not agree to these terms, you may not use the Platform.</p><p><hr></p><p><h2>2. About the Platform</h2></p><p>Dealer Connect is a private marketplace platform operated by Antyke High Street that connects sellers of antiques and collectibles with approved dealers. Access to certain features requires registration and, in the case of dealers, admin approval.</p><p><hr></p><p><h2>3. User Accounts</h2></p><p><h3>3.1 Registration</h3>
+To use the Platform you must register for an account. You agree to provide accurate, current and complete information during registration and to update such information to keep it accurate and complete.</p><p><h3>3.2 Account Security</h3>
+You are responsible for maintaining the confidentiality of your account credentials. You agree to notify Antyke High Street immediately of any unauthorized use of your account.</p><p><h3>3.3 Account Types</h3>
+<ul><li><strong>Seller Accounts</strong> — Free to create. Sellers may upload photos and descriptions of items they wish to sell.</li>
+<li><strong>Dealer Accounts</strong> — Subject to approval by Antyke High Street. Approved dealers may browse all seller submissions and contact sellers directly.</li>
+</ul>
+<hr></p><p><h2>4. User Conduct</h2></p><p>By using the Platform you agree not to:</p><p><ul><li>Upload, post or transmit any content that is unlawful, offensive, threatening, abusive, harassing, defamatory, vulgar, obscene or otherwise objectionable</li>
+<li>Upload images that are sexually explicit, violent, or otherwise inappropriate</li>
+<li>Impersonate any person or entity</li>
+<li>Upload content that infringes any intellectual property rights</li>
+<li>Use the Platform for any fraudulent or deceptive purpose</li>
+<li>Attempt to gain unauthorized access to any part of the Platform</li>
+<li>Use the Platform to solicit personal information from minors</li>
+<li>Engage in any conduct that restricts or inhibits any other user from using the Platform</li>
+</ul>
+<hr></p><p><h2>5. Content and Listings</h2></p><p><h3>5.1 Seller Responsibilities</h3>
+Sellers are solely responsible for the accuracy of their listings, including descriptions, photographs and pricing. Antyke High Street does not verify the authenticity, quality or legality of items listed.</p><p><h3>5.2 Photo Standards</h3>
+All uploaded photos must:
+<ul><li>Accurately represent the item being sold</li>
+<li>Be photos you own or have the right to use</li>
+<li>Not contain watermarks from other marketplaces</li>
+<li>Not contain inappropriate, offensive or adult content</li>
+</ul>
+<h3>5.3 Listing Expiration</h3>
+Listings automatically expire after 45 days from the date of submission or republication. Sellers may republish listings for a fee prior to expiration.</p><p><h3>5.4 Promoted Listings</h3>
+Sellers may pay to promote their listings to appear at the top of dealer feeds for a specified period. Promotion does not guarantee a sale.</p><p><hr></p><p><h2>6. Payments and Fees</h2></p><p><h3>6.1 Paid Features</h3>
+Certain features including listing republication and promotion require payment. All fees are displayed clearly before purchase and are charged in US Dollars (USD).</p><p><h3>6.2 Payment Processing</h3>
+Payments are processed securely by Stripe. Antyke High Street does not store your payment card information.</p><p><h3>6.3 Refund Policy</h3>
+All fees paid for republication and promotion are non-refundable once the service has been activated. If you experience a technical issue preventing service activation, please contact us within 24 hours.</p><p><hr></p><p><h2>7. Account Suspension and Termination</h2></p><p><strong>Antyke High Street reserves the right to suspend, block or permanently ban any user account at any time, for any reason, with or without notice.</strong> Reasons may include but are not limited to:</p><p><ul><li>Violation of these Terms and Conditions</li>
+<li>Uploading inappropriate, offensive or fraudulent content</li>
+<li>Abusive behavior toward other users or staff</li>
+<li>Suspected fraudulent activity</li>
+<li>Any conduct that Antyke High Street determines, in its sole discretion, to be harmful to the Platform, its users or its reputation</li>
+</ul>
+Users who have been banned may not create new accounts. Antyke High Street is not obligated to provide a reason for account suspension or termination.</p><p><hr></p><p><h2>8. Privacy</h2></p><p><h3>8.1 Information We Collect</h3>
+We collect information you provide during registration including your name, email address, phone number and address. We also collect information about your use of the Platform including items submitted and messages sent.</p><p><h3>8.2 How We Use Your Information</h3>
+We use your information to:
+<ul><li>Operate and improve the Platform</li>
+<li>Facilitate communication between sellers and dealers</li>
+<li>Send notifications about your account and listings</li>
+<li>Prevent fraud and enforce these Terms</li>
+</ul>
+<h3>8.3 Information Sharing</h3>
+We do not sell your personal information to third parties. Seller contact information (name, phone, address) is made available to approved dealers for the purpose of facilitating transactions.</p><p><h3>8.4 Data Retention</h3>
+Listing data is automatically deleted after 45 days of inactivity. Account information is retained until you request deletion or your account is terminated.</p><p><hr></p><p><h2>9. Intellectual Property</h2></p><p>All content on the Platform including the Antyke High Street name, logo, and site design are the property of Antyke High Street and may not be used without express written permission.</p><p>You retain ownership of photos and content you upload, but grant Antyke High Street a non-exclusive license to display that content on the Platform for the purpose of operating the service.</p><p><hr></p><p><h2>10. Disclaimers</h2></p><p>The Platform is provided "as is" without warranties of any kind. Antyke High Street does not warrant that:</p><p><ul><li>The Platform will be uninterrupted or error-free</li>
+<li>Any listing is accurate, complete or suitable for any purpose</li>
+<li>Any transaction between a seller and dealer will be completed successfully</li>
+</ul>
+Antyke High Street is not a party to any transaction between sellers and dealers. Any disputes arising from a transaction are solely between the buyer and seller.</p><p><hr></p><p><h2>11. Limitation of Liability</h2></p><p>To the fullest extent permitted by law, Antyke High Street shall not be liable for any indirect, incidental, special, consequential or punitive damages arising from your use of the Platform, including but not limited to loss of profits, data or goodwill.</p><p><hr></p><p><h2>12. Indemnification</h2></p><p>You agree to indemnify and hold harmless Antyke High Street and its owners, employees and agents from any claims, damages, losses or expenses arising from your use of the Platform or your violation of these Terms.</p><p><hr></p><p><h2>13. Changes to These Terms</h2></p><p>Antyke High Street reserves the right to modify these Terms at any time. Changes will be posted on the Platform with an updated effective date. Continued use of the Platform after changes constitutes acceptance of the revised Terms.</p><p><hr></p><p><h2>14. Governing Law</h2></p><p>These Terms shall be governed by the laws of the United States. Any disputes arising under these Terms shall be resolved in the courts of competent jurisdiction.</p><p><hr></p><p><h2>15. Contact</h2></p><p>For questions about these Terms and Conditions, or to report a violation, please contact:</p><p><strong>Antyke High Street</strong>
+Email: sfm9497@gmail.com
+Website: www.antykehighstreet.com</p><p><hr></p><p><em>By using Dealer Connect you acknowledge that you have read, understood and agree to be bound by these Terms and Conditions.</em>
+</p>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -2745,6 +2889,21 @@ window.unblockEmail = async function(id){
   window.toast('Email unblocked.')
   loadBlockedEmails()
 }
+
+
+// ---- TERMS ----
+window.openTerms = function(){
+  const overlay = document.getElementById('terms-overlay')
+  if(overlay){ overlay.classList.add('open'); document.body.style.overflow='hidden'; }
+}
+window.closeTerms = function(){
+  const overlay = document.getElementById('terms-overlay')
+  if(overlay){ overlay.classList.remove('open'); document.body.style.overflow=''; }
+}
+// Close terms on Escape
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') window.closeTerms()
+})
 
 ;(async()=>{
   const{data:{session}}=await sb.auth.getSession()
