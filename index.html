@@ -511,7 +511,10 @@ tr:last-child td { border-bottom: none; }
 .upload-zone:hover { border-color: rgba(201,168,76,0.6) !important; box-shadow: 0 0 15px rgba(201,168,76,0.1); }
 .upload-zone.dragging { border-color: #C9A84C !important; background: rgba(201,168,76,0.05) !important; }
 /* Type cards dark */
-#type-card-seller, #type-card-dealer, #bc-card-sellers, #bc-card-dealers, #bc-card-all {
+#type-card-seller, #type-card-dealer {
+  transition: all 0.3s ease !important;
+}
+#bc-card-sellers, #bc-card-dealers, #bc-card-all {
   background: #201A0A !important;
 }
 /* Price big in modal */
@@ -643,15 +646,15 @@ tr:last-child td { border-bottom: none; }
 
       <!-- ACCOUNT TYPE SELECTOR -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem;">
-        <div id="type-card-seller" onclick="window.switchSignupType&&window.switchSignupType('seller')" style="border:2px solid #1A1408;border-radius:10px;padding:1rem;cursor:pointer;background:#FBF7EC20;transition:all 0.15s;">
+        <div id="type-card-seller" onclick="window.switchSignupType&&window.switchSignupType('seller')" style="border:2px solid #C9A84C;border-radius:10px;padding:1rem;cursor:pointer;background:rgba(201,168,76,0.08);transition:all 0.3s;box-shadow:0 0 18px rgba(201,168,76,0.35),inset 0 0 12px rgba(201,168,76,0.05);">
           <div style="font-size:22px;margin-bottom:6px;">🏷️</div>
-          <div style="font-size:14px;font-weight:500;color:#1A1408;">I am a Seller</div>
-          <div style="font-size:11px;color:#888;margin-top:4px;line-height:1.4;">I have items to sell and want to connect with Dealer Connect dealers</div>
+          <div style="font-size:14px;font-weight:600;color:#C9A84C;">I am a Seller</div>
+          <div style="font-size:11px;color:#9A8A7A;margin-top:4px;line-height:1.4;">I have items to sell and want to connect with Dealer Connect dealers</div>
         </div>
-        <div id="type-card-dealer" onclick="window.switchSignupType&&window.switchSignupType('dealer')" style="border:2px solid rgba(0,0,0,0.12);border-radius:10px;padding:1rem;cursor:pointer;background:transparent;transition:all 0.15s;">
+        <div id="type-card-dealer" onclick="window.switchSignupType&&window.switchSignupType('dealer')" style="border:2px solid rgba(201,168,76,0.2);border-radius:10px;padding:1rem;cursor:pointer;background:rgba(201,168,76,0.03);transition:all 0.3s;">
           <div style="font-size:22px;margin-bottom:6px;">🏛️</div>
-          <div style="font-size:14px;font-weight:500;color:#666;">I am a Dealer</div>
-          <div style="font-size:11px;color:#888;margin-top:4px;line-height:1.4;">I am an approved Dealer Connect dealer looking to source items</div>
+          <div style="font-size:14px;font-weight:500;color:#9A8A7A;">I am a Dealer</div>
+          <div style="font-size:11px;color:#7A6A5A;margin-top:4px;line-height:1.4;">I am an approved Dealer Connect dealer looking to source items</div>
         </div>
       </div>
 
@@ -1366,25 +1369,31 @@ window.switchSignupType = function(type){
   el('tab-seller').classList.toggle('active',type==='seller')
   el('tab-dealer').classList.toggle('active',type==='dealer')
 
-  // Update visual cards
   const sellerCard=el('type-card-seller')
   const dealerCard=el('type-card-dealer')
   if(sellerCard&&dealerCard){
-    if(type==='seller'){
-      sellerCard.style.border='2px solid #1A1408'
-      sellerCard.style.background='#FBF7EC20'
-      sellerCard.querySelector('div:nth-child(2)').style.color='#1A1408'
-      dealerCard.style.border='2px solid rgba(0,0,0,0.12)'
-      dealerCard.style.background='transparent'
-      dealerCard.querySelector('div:nth-child(2)').style.color='#666'
-    } else {
-      dealerCard.style.border='2px solid #1A1408'
-      dealerCard.style.background='#FBF7EC20'
-      dealerCard.querySelector('div:nth-child(2)').style.color='#1A1408'
-      sellerCard.style.border='2px solid rgba(0,0,0,0.12)'
-      sellerCard.style.background='transparent'
-      sellerCard.querySelector('div:nth-child(2)').style.color='#666'
-    }
+    const activeCard = type==='seller' ? sellerCard : dealerCard
+    const inactiveCard = type==='seller' ? dealerCard : sellerCard
+
+    // Active - gold glow matching the logo effect
+    activeCard.style.border='2px solid #C9A84C'
+    activeCard.style.background='rgba(201,168,76,0.1)'
+    activeCard.style.boxShadow='0 0 22px rgba(201,168,76,0.45), 0 0 6px rgba(201,168,76,0.2), inset 0 0 15px rgba(201,168,76,0.06)'
+    activeCard.style.transform='scale(1.02)'
+    activeCard.querySelector('div:nth-child(2)').style.color='#C9A84C'
+    activeCard.querySelector('div:nth-child(2)').style.fontWeight='600'
+    activeCard.querySelector('div:nth-child(2)').style.textShadow='0 0 10px rgba(201,168,76,0.4)'
+    activeCard.querySelector('div:nth-child(3)').style.color='#9A8A7A'
+
+    // Inactive - dimmed
+    inactiveCard.style.border='2px solid rgba(201,168,76,0.15)'
+    inactiveCard.style.background='rgba(201,168,76,0.02)'
+    inactiveCard.style.boxShadow='none'
+    inactiveCard.style.transform='scale(1)'
+    inactiveCard.querySelector('div:nth-child(2)').style.color='#5A4A3A'
+    inactiveCard.querySelector('div:nth-child(2)').style.fontWeight='500'
+    inactiveCard.querySelector('div:nth-child(2)').style.textShadow='none'
+    inactiveCard.querySelector('div:nth-child(3)').style.color='#4A3A2A'
   }
 }
 
@@ -1876,7 +1885,7 @@ async function loadDealer(){
 
 async function loadDealerData(){
   const[s,sel]=await Promise.all([
-    sb.from('submissions').select('*, profiles:seller_id(id,name,phone,address,notes,avatar_url)').order('created_at',{ascending:false}),
+    sb.from('submissions').select('*, profiles:seller_id(id,name,email,phone,address,notes,avatar_url)').order('created_at',{ascending:false}),
     sb.from('profiles').select('*').eq('type','seller').order('created_at',{ascending:false})
   ])
   APP.submissions=s.data||[]
