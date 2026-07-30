@@ -532,6 +532,30 @@ tr:last-child td { border-bottom: none; }
 .fav-btn { background: rgba(15,15,30,0.8); }
 .fav-btn:hover { background: rgba(26,26,46,0.95); }
 
+
+/* BLOCKING FEATURE */
+.badge.blocked { background: rgba(226,75,74,0.2); color: #E24B4A; }
+.block-btn { border-color: #E24B4A; color: #E24B4A; }
+.block-btn:hover { background: rgba(226,75,74,0.15); }
+.unblock-btn { border-color: #C9A84C; color: #C9A84C; }
+.unblock-btn:hover { background: rgba(201,168,76,0.15); }
+.blocked-notice { 
+  position: fixed; inset: 0; background: #0D0A06; 
+  display: flex; flex-direction: column; align-items: center; 
+  justify-content: center; z-index: 9999; text-align: center; padding: 2rem;
+}
+.blocked-notice .icon { font-size: 64px; margin-bottom: 1.5rem; }
+.blocked-notice h2 { font-size: 24px; font-weight: 600; color: #C9A84C; margin-bottom: 1rem; }
+.blocked-notice p { font-size: 15px; color: #9A8A7A; max-width: 400px; line-height: 1.6; margin-bottom: 1.5rem; }
+.blocked-notice .contact { font-size: 13px; color: #7A6A5A; }
+
+/* Blocked email section */
+.blocked-email-item { 
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-bottom: 0.5px solid rgba(255,255,255,0.06);
+}
+.blocked-email-item:last-child { border-bottom: none; }
+
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .upload-zone.dragging{border-color:#1A1408;background:#FBF7EC20;}
@@ -830,6 +854,7 @@ tr:last-child td { border-bottom: none; }
     <button class="admin-tab" onclick="window.adminTab&&window.adminTab('sellers')">Sellers</button>
     <button class="admin-tab" onclick="window.adminTab&&window.adminTab('photos')">All submissions</button>
     <button class="admin-tab" onclick="window.adminTab&&window.adminTab('broadcast')">📣 Broadcast</button>
+    <button class="admin-tab" onclick="window.adminTab&&window.adminTab('blocked')">🚫 Blocked</button>
     <button class="admin-tab" onclick="window.adminTab&&window.adminTab('settings')">⚙️ Settings</button>
   </div>
   <div class="dash-content" style="padding-top:1.5rem;">
@@ -895,6 +920,47 @@ tr:last-child td { border-bottom: none; }
 
       </div>
     </div>
+    <!-- BLOCKED PANEL -->
+    <div id="admin-blocked" class="admin-panel">
+      <div style="max-width:600px;display:flex;flex-direction:column;gap:1.5rem;">
+
+        <!-- Block a user by email -->
+        <div style="background:#1A1408;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden;">
+          <div style="padding:1rem 1.5rem;border-bottom:0.5px solid rgba(255,255,255,0.08);">
+            <h3 style="font-size:15px;font-weight:500;color:#C9A84C;">🚫 Block an email address</h3>
+            <p style="font-size:12px;color:#7A6A5A;margin-top:3px;">Prevent someone from signing up or logging in</p>
+          </div>
+          <div style="padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:10px;">
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:12px;color:#9A8A7A;display:block;margin-bottom:4px;">Email address</label>
+              <input type="email" id="block-email-input" placeholder="user@example.com" style="width:100%;padding:8px 12px;border:0.5px solid rgba(201,168,76,0.25);border-radius:8px;font-size:14px;font-family:inherit;background:#201A0A;color:#D4C8B8;outline:none;">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:12px;color:#9A8A7A;display:block;margin-bottom:4px;">Reason (shown to user)</label>
+              <input type="text" id="block-email-reason" placeholder="e.g. Inappropriate content, abuse, etc." style="width:100%;padding:8px 12px;border:0.5px solid rgba(201,168,76,0.25);border-radius:8px;font-size:14px;font-family:inherit;background:#201A0A;color:#D4C8B8;outline:none;">
+            </div>
+            <button class="btn" onclick="window.blockEmail&&window.blockEmail()" style="border-color:#E24B4A;color:#E24B4A;align-self:flex-start;padding:8px 20px;">🚫 Block this email</button>
+          </div>
+        </div>
+
+        <!-- Currently blocked emails -->
+        <div style="background:#1A1408;border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;overflow:hidden;">
+          <div style="padding:1rem 1.5rem;border-bottom:0.5px solid rgba(255,255,255,0.08);">
+            <h3 style="font-size:15px;font-weight:500;color:#C9A84C;">Blocked email addresses</h3>
+          </div>
+          <div id="blocked-emails-list">
+            <div style="padding:1rem;color:#7A6A5A;font-size:13px;">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Info about blocking users -->
+        <div style="background:rgba(226,75,74,0.08);border:0.5px solid rgba(226,75,74,0.2);border-radius:10px;padding:1rem 1.25rem;font-size:13px;color:#9A8A7A;line-height:1.6;">
+          💡 <strong style="color:#D4C8B8;">To block an existing user</strong> — go to the Dealers or Sellers tab and click the <strong style="color:#E24B4A;">🚫 Block</strong> button next to their name. They will be immediately locked out and shown a suspension message.
+        </div>
+
+      </div>
+    </div>
+
     <!-- SETTINGS PANEL -->
     <div id="admin-settings" class="admin-panel">
       <div style="max-width:700px;display:flex;flex-direction:column;gap:1.5rem;">
@@ -1153,6 +1219,15 @@ tr:last-child td { border-bottom: none; }
   <div class="lightbox-hint" id="lightbox-hint">Scroll or pinch to zoom · Click and drag to pan</div>
 </div>
 
+<!-- BLOCKED USER NOTICE -->
+<div class="blocked-notice" id="blocked-notice" style="display:none;">
+  <div class="icon">🚫</div>
+  <h2>Account Suspended</h2>
+  <p id="blocked-message">Your account has been suspended. If you believe this is an error please contact support.</p>
+  <div class="contact">sfm9497@gmail.com</div>
+  <button class="btn" onclick="window.logout&&window.logout()" style="margin-top:1.5rem;border-color:rgba(201,168,76,0.3);color:#C9A84C;">Log out</button>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="payment-success-banner" id="payment-success-banner"></div>
 
@@ -1347,6 +1422,14 @@ window.doSignup = async function(){
   }
   setBtn('signup-btn',true)
   try{
+    // Check if email is pre-blocked
+    const{data:blockedCheck}=await sb.from('blocked_emails').select('id,reason').eq('email',email.toLowerCase()).single()
+    if(blockedCheck){
+      showErr('signup-error', 'This email address is not permitted to create an account. ' + (blockedCheck.reason||''))
+      setBtn('signup-btn',false,'Create account')
+      return
+    }
+
     const{data,error}=await sb.auth.signUp({email,password:pass})
     if(error)throw error
     let avatarUrl=null
@@ -1408,6 +1491,16 @@ async function route(user){
   const{data,error}=await sb.from('profiles').select('*').eq('id',user.id).single()
   if(error||!data){window.toast('Profile not found.');return}
   APP.profile=data
+
+  // Check if user is blocked
+  if(data.blocked){
+    const notice = document.getElementById('blocked-notice')
+    const msg = document.getElementById('blocked-message')
+    if(msg && data.blocked_reason) msg.textContent = data.blocked_reason
+    if(notice) notice.style.display='flex'
+    return
+  }
+
   if(data.type==='admin'){await loadAdmin();window.showScreen('screen-admin')}
   else if(data.type==='seller'){await loadSeller();window.showScreen('screen-seller')}
   else{await loadDealer();window.showScreen('screen-dealer')}
@@ -2044,12 +2137,13 @@ async function loadAdmin(){
 }
 
 window.adminTab = function(n){
-  document.querySelectorAll('.admin-tab').forEach((t,i)=>t.classList.toggle('active',['dealers','sellers','photos','broadcast','settings'][i]===n))
+  document.querySelectorAll('.admin-tab').forEach((t,i)=>t.classList.toggle('active',['dealers','sellers','photos','broadcast','blocked','settings'][i]===n))
   document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'))
   const panel = el('admin-'+n)
   console.log('adminTab:', n, 'panel found:', !!panel)
   if(panel) panel.classList.add('active')
   if(n==='broadcast') initBroadcast()
+  if(n==='blocked') loadBlockedEmails()
   if(n==='settings') loadSettings()
 }
 
@@ -2070,6 +2164,11 @@ function renderAdminDealers(){
     const actions=tr.querySelector('.td-actions')
     if(d.dealer_status!=='approved'){const b=document.createElement('button');b.className='btn sm primary';b.textContent='Approve';b.addEventListener('click',()=>dealerAction(d.id,'approved'));actions.appendChild(b)}
     if(d.dealer_status!=='rejected'){const b=document.createElement('button');b.className='btn danger sm';b.textContent='Reject';b.addEventListener('click',()=>dealerAction(d.id,'rejected'));actions.appendChild(b)}
+    const bb=document.createElement('button')
+    bb.className=d.blocked?'btn sm unblock-btn':'btn sm block-btn'
+    bb.textContent=d.blocked?'Unblock':'🚫 Block'
+    bb.addEventListener('click',()=>toggleBlock(d.id, d.blocked, d.email))
+    actions.appendChild(bb)
     const rb=document.createElement('button');rb.className='btn sm';rb.textContent='Remove';rb.addEventListener('click',()=>adminDel(d.id));actions.appendChild(rb)
     tbody.appendChild(tr)
   })
@@ -2100,6 +2199,11 @@ function renderAdminSellers(){
       <td style="font-size:12px;color:#666;">${s.address||'—'}</td>
       <td>${count}</td>
       <td><div class="td-actions"></div></td>`
+    const bb2=document.createElement('button')
+    bb2.className=s.blocked?'btn sm unblock-btn':'btn sm block-btn'
+    bb2.textContent=s.blocked?'Unblock':'🚫 Block'
+    bb2.addEventListener('click',()=>toggleBlock(s.id, s.blocked, s.email))
+    tr.querySelector('.td-actions').appendChild(bb2)
     const b=document.createElement('button');b.className='btn danger sm';b.textContent='Remove';b.addEventListener('click',()=>adminDel(s.id))
     tr.querySelector('.td-actions').appendChild(b)
     tbody.appendChild(tr)
@@ -2562,6 +2666,75 @@ async function handlePaymentReturn(){
   } else if(status === 'cancelled'){
     window.toast('Payment cancelled.')
   }
+}
+
+
+// ---- BLOCKING ----
+window.toggleBlock = async function(userId, isBlocked, email){
+  if(!isBlocked){
+    const reason = prompt('Reason for blocking ' + email + ' (optional):') 
+    if(reason === null) return // cancelled
+    const{error}=await sb.from('profiles').update({
+      blocked: true,
+      blocked_reason: reason || 'Your account has been suspended. Please contact support.',
+      blocked_at: new Date().toISOString()
+    }).eq('id', userId)
+    if(error){window.toast('Failed to block user.');return}
+    window.toast('User blocked.')
+  } else {
+    const{error}=await sb.from('profiles').update({
+      blocked: false,
+      blocked_reason: null,
+      blocked_at: null
+    }).eq('id', userId)
+    if(error){window.toast('Failed to unblock user.');return}
+    window.toast('User unblocked.')
+  }
+  await loadAdmin()
+}
+
+window.blockEmail = async function(){
+  const email = document.getElementById('block-email-input')?.value?.trim()
+  const reason = document.getElementById('block-email-reason')?.value?.trim()
+  if(!email){window.toast('Please enter an email address.');return}
+  const{error}=await sb.from('blocked_emails').insert({
+    email: email.toLowerCase(),
+    reason: reason||'Email blocked by admin'
+  })
+  if(error){
+    if(error.code==='23505') window.toast('That email is already blocked.')
+    else window.toast('Failed to block email: '+error.message)
+    return
+  }
+  window.toast('Email blocked successfully.')
+  if(document.getElementById('block-email-input')) document.getElementById('block-email-input').value=''
+  if(document.getElementById('block-email-reason')) document.getElementById('block-email-reason').value=''
+  loadBlockedEmails()
+}
+
+async function loadBlockedEmails(){
+  const{data}=await sb.from('blocked_emails').select('*').order('created_at',{ascending:false})
+  const list=document.getElementById('blocked-emails-list')
+  if(!list)return
+  if(!data||!data.length){
+    list.innerHTML='<div style="padding:1rem;color:#7A6A5A;font-size:13px;">No blocked emails yet.</div>'
+    return
+  }
+  list.innerHTML=data.map(e=>`
+    <div class="blocked-email-item">
+      <div>
+        <div style="font-size:14px;color:#D4C8B8;">${e.email}</div>
+        <div style="font-size:11px;color:#7A6A5A;margin-top:2px;">${e.reason||'No reason given'} · ${new Date(e.created_at).toLocaleDateString()}</div>
+      </div>
+      <button class="btn sm unblock-btn" onclick="unblockEmail('${e.id}')">Remove</button>
+    </div>
+  `).join('')
+}
+
+window.unblockEmail = async function(id){
+  await sb.from('blocked_emails').delete().eq('id',id)
+  window.toast('Email unblocked.')
+  loadBlockedEmails()
 }
 
 ;(async()=>{
