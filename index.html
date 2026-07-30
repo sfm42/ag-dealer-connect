@@ -967,18 +967,18 @@ tr:last-child td { border-bottom: none; }
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.5rem;">
           <div id="bc-card-sellers" onclick="window.setBroadcastTarget&&window.setBroadcastTarget('sellers')" style="border:2px solid #1A1408;border-radius:10px;padding:1rem;cursor:pointer;background:#0D0A06;text-align:center;transition:all 0.15s;">
             <div style="font-size:24px;margin-bottom:6px;">🏷️</div>
-            <div style="font-size:14px;font-weight:500;">Sellers only</div>
-            <div style="font-size:11px;color:#888;margin-top:3px;" id="bc-seller-count">— sellers</div>
+            <div style="font-size:14px;font-weight:600;color:#C9A84C;text-shadow:0 0 10px rgba(201,168,76,0.4);">Sellers only</div>
+            <div style="font-size:11px;color:#9A8A7A;margin-top:3px;" id="bc-seller-count">— sellers</div>
           </div>
-          <div id="bc-card-dealers" onclick="window.setBroadcastTarget&&window.setBroadcastTarget('dealers')" style="border:2px solid rgba(0,0,0,0.12);border-radius:10px;padding:1rem;cursor:pointer;background:transparent;text-align:center;transition:all 0.15s;">
+          <div id="bc-card-dealers" onclick="window.setBroadcastTarget&&window.setBroadcastTarget('dealers')" style="border:2px solid rgba(201,168,76,0.15);border-radius:10px;padding:1rem;cursor:pointer;background:rgba(201,168,76,0.02);text-align:center;transition:all 0.3s;">
             <div style="font-size:24px;margin-bottom:6px;">🏛️</div>
-            <div style="font-size:14px;font-weight:500;">Dealers only</div>
-            <div style="font-size:11px;color:#888;margin-top:3px;" id="bc-dealer-count">— dealers</div>
+            <div style="font-size:14px;font-weight:500;color:#5A4A3A;">Dealers only</div>
+            <div style="font-size:11px;color:#4A3A2A;margin-top:3px;" id="bc-dealer-count">— dealers</div>
           </div>
-          <div id="bc-card-all" onclick="window.setBroadcastTarget&&window.setBroadcastTarget('all')" style="border:2px solid rgba(0,0,0,0.12);border-radius:10px;padding:1rem;cursor:pointer;background:transparent;text-align:center;transition:all 0.15s;">
+          <div id="bc-card-all" onclick="window.setBroadcastTarget&&window.setBroadcastTarget('all')" style="border:2px solid rgba(201,168,76,0.15);border-radius:10px;padding:1rem;cursor:pointer;background:rgba(201,168,76,0.02);text-align:center;transition:all 0.3s;">
             <div style="font-size:24px;margin-bottom:6px;">📣</div>
-            <div style="font-size:14px;font-weight:500;">Everyone</div>
-            <div style="font-size:11px;color:#888;margin-top:3px;" id="bc-all-count">— recipients</div>
+            <div style="font-size:14px;font-weight:500;color:#5A4A3A;">Everyone</div>
+            <div style="font-size:11px;color:#4A3A2A;margin-top:3px;" id="bc-all-count">— recipients</div>
           </div>
         </div>
 
@@ -2552,15 +2552,33 @@ window.setBroadcastTarget = function(target){
   const sellers = APP.sellers.length
   const dealers = APP.dealers.filter(d=>d.dealer_status==='approved').length
 
-  // Update card styles
+  // Update card styles - gold glow on active, dim on inactive
   const cards = { sellers:'bc-card-sellers', dealers:'bc-card-dealers', all:'bc-card-all' }
   Object.entries(cards).forEach(([key,id])=>{
     const card = el(id)
     if(!card) return
-    const isActive = key === target
-    card.style.border = isActive ? '2px solid #1A1408' : '2px solid rgba(0,0,0,0.12)'
-    card.style.background = isActive ? '#f9f7f4' : 'transparent'
-    card.querySelector('div:nth-child(2)').style.fontWeight = isActive ? '600' : '500'
+    if(key === target){
+      // Active - gold glow matching logo/signup
+      card.style.border='2px solid #C9A84C'
+      card.style.background='rgba(201,168,76,0.1)'
+      card.style.boxShadow='0 0 22px rgba(201,168,76,0.45), 0 0 6px rgba(201,168,76,0.2), inset 0 0 15px rgba(201,168,76,0.06)'
+      card.style.transform='scale(1.02)'
+      card.style.cursor='pointer'
+      const title = card.querySelector('div:nth-child(2)')
+      if(title){ title.style.color='#C9A84C'; title.style.fontWeight='600'; title.style.textShadow='0 0 10px rgba(201,168,76,0.4)'; }
+      const sub = card.querySelector('div:nth-child(3)')
+      if(sub) sub.style.color='#9A8A7A'
+    } else {
+      // Inactive - dimmed
+      card.style.border='2px solid rgba(201,168,76,0.15)'
+      card.style.background='rgba(201,168,76,0.02)'
+      card.style.boxShadow='none'
+      card.style.transform='scale(1)'
+      const title = card.querySelector('div:nth-child(2)')
+      if(title){ title.style.color='#5A4A3A'; title.style.fontWeight='500'; title.style.textShadow='none'; }
+      const sub = card.querySelector('div:nth-child(3)')
+      if(sub) sub.style.color='#4A3A2A'
+    }
   })
 
   // Update preview
