@@ -1672,7 +1672,7 @@ async function uploadImg(file,folder='submissions'){
 // resend - email sending handled server-side to avoid CORS
 const EDGE_URL = 'https://yrjotpgjljgksoyxhdzx.supabase.co/functions/v1/send-email'
 const STRIPE_URL = 'https://yrjotpgjljgksoyxhdzx.supabase.co/functions/v1/stripe-checkout'
-const STRIPE_PK = 'pk_test_51TqbVIBBs7SKcbFjiZOGJbC4126msXQgnk97tbUZyMguRNhWOty233vS0rrNRBfm6D6YbdzqKBFnA9snU8CIVkSF003r43o4Qo'
+const STRIPE_PK = 'pk_live_51TqbV7BN6qkwhtPkaRbuooQNOr7UmpBPT6mvoHpfyuf5ODmWhFcBVOMRsYXe7deZe8FX2fTvZvFTl6d3MtK2Jo3O00hAx5N4wA'
 
 // Cloudinary URL optimizer - transforms image URLs to serve smaller versions
 function imgThumb(url, width=400){
