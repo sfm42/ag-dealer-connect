@@ -631,6 +631,14 @@ tr:last-child td { border-bottom: none; }
 }
 .terms-close:hover { background: rgba(201,168,76,0.2); }
 
+
+/* HIDDEN USERS */
+.hide-btn { border-color: #9A8A7A; color: #9A8A7A; }
+.hide-btn:hover { background: rgba(154,138,122,0.15); }
+.unhide-btn { border-color: #C9A84C; color: #C9A84C; }
+.unhide-btn:hover { background: rgba(201,168,76,0.15); }
+.badge.hidden { background: rgba(154,138,122,0.2); color: #9A8A7A; }
+
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .upload-zone.dragging{border-color:#1A1408;background:#FBF7EC20;}
@@ -2030,10 +2038,15 @@ async function loadDealer(){
 async function loadDealerData(){
   const[s,sel]=await Promise.all([
     sb.from('submissions').select('*, profiles:seller_id(id,name,email,phone,address,notes,avatar_url)').order('created_at',{ascending:false}),
-    sb.from('profiles').select('*').eq('type','seller').order('created_at',{ascending:false})
+    sb.from('profiles').select('*').eq('type','seller').eq('hidden',false).order('created_at',{ascending:false})
   ])
-  APP.submissions=s.data||[]
-  APP.sellers=sel.data||[]
+  // Filter out submissions from hidden sellers
+  const hiddenIds = new Set()
+  APP.sellers=(sel.data||[]).filter(s=>!s.hidden)
+  APP.submissions=(s.data||[]).filter(p=>{
+    const seller = p.profiles
+    return !seller || !seller.hidden
+  })
   loadFavorites()
   updateFavCount()
 }
@@ -2312,7 +2325,7 @@ function renderAdminDealers(){
       <td><a href="mailto:${d.email}" style="color:#C9A84C;text-decoration:none;">${d.email}</a></td>
       <td>${d.phone||'—'}</td>
       <td>${d.dealer_number||'—'}</td>
-      <td><span class="badge ${d.dealer_status||'pending'}">${d.dealer_status||'pending'}</span></td>
+      <td><span class="badge ${d.dealer_status||'pending'}">${d.dealer_status||'pending'}</span>${d.hidden?'<span class="badge hidden" style="margin-left:4px;">hidden</span>':''}${d.blocked?'<span class="badge blocked" style="margin-left:4px;">blocked</span>':''}</td>
       <td><div class="td-actions"></div></td>`
     const actions=tr.querySelector('.td-actions')
     if(d.dealer_status!=='approved'){const b=document.createElement('button');b.className='btn sm primary';b.textContent='Approve';b.addEventListener('click',()=>dealerAction(d.id,'approved'));actions.appendChild(b)}
@@ -2322,6 +2335,12 @@ function renderAdminDealers(){
     bb.textContent=d.blocked?'Unblock':'🚫 Block'
     bb.addEventListener('click',()=>toggleBlock(d.id, d.blocked, d.email))
     actions.appendChild(bb)
+    const hb=document.createElement('button')
+    hb.className=d.hidden?'btn sm unhide-btn':'btn sm hide-btn'
+    hb.textContent=d.hidden?'👁 Unhide':'👁 Hide'
+    hb.title=d.hidden?'Make visible to all users':'Hide from dealers and sellers'
+    hb.addEventListener('click',()=>toggleHidden(d.id, d.hidden))
+    actions.appendChild(hb)
     const rb=document.createElement('button');rb.className='btn sm';rb.textContent='Remove';rb.addEventListener('click',()=>adminDel(d.id));actions.appendChild(rb)
     tbody.appendChild(tr)
   })
@@ -2350,13 +2369,19 @@ function renderAdminSellers(){
       <td><a href="mailto:${s.email}" style="color:#C9A84C;text-decoration:none;">${s.email}</a></td>
       <td>${s.phone||'—'}</td>
       <td style="font-size:12px;color:#666;">${s.address||'—'}</td>
-      <td>${count}</td>
+      <td>${count}${s.hidden?' <span class="badge hidden">hidden</span>':''}${s.blocked?' <span class="badge blocked">blocked</span>':''}</td>
       <td><div class="td-actions"></div></td>`
     const bb2=document.createElement('button')
     bb2.className=s.blocked?'btn sm unblock-btn':'btn sm block-btn'
     bb2.textContent=s.blocked?'Unblock':'🚫 Block'
     bb2.addEventListener('click',()=>toggleBlock(s.id, s.blocked, s.email))
     tr.querySelector('.td-actions').appendChild(bb2)
+    const hb2=document.createElement('button')
+    hb2.className=s.hidden?'btn sm unhide-btn':'btn sm hide-btn'
+    hb2.textContent=s.hidden?'👁 Unhide':'👁 Hide'
+    hb2.title=s.hidden?'Make visible to dealers':'Hide from dealer view'
+    hb2.addEventListener('click',()=>toggleHidden(s.id, s.hidden))
+    tr.querySelector('.td-actions').appendChild(hb2)
     const b=document.createElement('button');b.className='btn danger sm';b.textContent='Remove';b.addEventListener('click',()=>adminDel(s.id))
     tr.querySelector('.td-actions').appendChild(b)
     tbody.appendChild(tr)
@@ -2821,6 +2846,16 @@ async function handlePaymentReturn(){
   }
 }
 
+
+// ---- HIDDEN USERS ----
+window.toggleHidden = async function(userId, isHidden){
+  const{error}=await sb.from('profiles').update({
+    hidden: !isHidden
+  }).eq('id', userId)
+  if(error){window.toast('Failed to update visibility.');return}
+  window.toast(isHidden ? '👁 User is now visible' : '👁 User hidden from dealers and sellers')
+  await loadAdmin()
+}
 
 // ---- BLOCKING ----
 window.toggleBlock = async function(userId, isBlocked, email){
