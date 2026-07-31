@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dealer Connect – Privacy Policy | Antyke High Street</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-primary:      #0d0d0d;
+            --bg-secondary:    #111418;
+            --bg-card:         #161a1f;
+            --gold-primary:    #c9a84c;
+            --gold-light:      #e2c47a;
+            --gold-dark:       #8c6e2a;
+            --gold-border:     #3a2e14;
+            --text-primary:    #e8dfc8;
+            --text-secondary:  #b0a080;
+            --text-muted:      #7a6f58;
+            --border-subtle:   #2a2218;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'EB Garamond', Georgia, serif;
+            font-size: 17px;
+            line-height: 1.85;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            background-image:
+                radial-gradient(ellipse at 20% 0%, rgba(201, 168, 76, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(201, 168, 76, 0.03) 0%, transparent 60%);
+            min-height: 100vh;
+        }
+
+        /* ── Ornamental border frame ── */
+        body::before {
+            content: '';
+            display: block;
+            position: fixed;
+            top: 12px; left: 12px; right: 12px; bottom: 12px;
+            border: 1px solid var(--gold-border);
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* ── Page wrapper ── */
+        .page-wrapper {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 60px 48px 80px;
+        }
+
+        /* ── Site header ── */
+        .site-header {
+            text-align: center;
+            padding: 40px 0 32px;
+            border-bottom: 1px solid var(--gold-border);
+            margin-bottom: 48px;
+        }
+
+        .site-header .brand {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 6px;
+        }
+
+        /* ── Gold ornament divider ── */
+        .ornament {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin: 20px 0;
+            color: var(--gold-dark);
+        }
+
+        .ornament::before,
+        .ornament::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--gold-dark), transparent);
+        }
+
+        .ornament span {
+            font-size: 16px;
+            color: var(--gold-primary);
+        }
+
+        /* ── Document title block ── */
+        .title-block {
+            text-align: center;
+            margin-bottom: 52px;
+        }
+
+        .title-block h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--gold-primary);
+            letter-spacing: 0.04em;
+            line-height: 1.2;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 24px rgba(201, 168, 76, 0.2);
+        }
+
+        .title-block .subtitle {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 20px;
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+        }
+
+        .meta-grid {
+            display: inline-grid;
+            grid-template-columns: auto auto;
+            gap: 6px 24px;
+            text-align: left;
+            background: var(--bg-card);
+            border: 1px solid var(--gold-border);
+            padding: 18px 32px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .meta-grid .meta-label {
+            color: var(--gold-primary);
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        .meta-grid .meta-value {
+            color: var(--text-primary);
+        }
+
+        .meta-grid .meta-value a {
+            color: var(--gold-light);
+            text-decoration: none;
+        }
+
+        .meta-grid .meta-value a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── TOC ── */
+        .toc {
+            background: var(--bg-card);
+            border: 1px solid var(--gold-border);
+            border-left: 3px solid var(--gold-primary);
+            padding: 28px 36px;
+            margin-bottom: 52px;
+        }
+
+        .toc-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 16px;
+        }
+
+        .toc ol {
+            list-style: none;
+            counter-reset: toc-counter;
+            padding: 0;
+        }
+
+        .toc ol li {
+            counter-increment: toc-counter;
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 15px;
+        }
+
+        .toc ol li:last-child { border-bottom: none; }
+
+        .toc ol li a {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            transition: color 0.2s;
+        }
+
+        .toc ol li a:hover { color: var(--gold-light); }
+
+        .toc ol li a::before {
+            content: counter(toc-counter, decimal-leading-zero) ".";
+            color: var(--gold-dark);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            min-width: 26px;
+        }
+
+        /* ── Sections ── */
+        .policy-section {
+            margin-bottom: 48px;
+            scroll-margin-top: 32px;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--gold-primary);
+            letter-spacing: 0.03em;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--gold-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2 .section-num {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            color: var(--gold-dark);
+            background: var(--bg-card);
+            border: 1px solid var(--gold-border);
+            padding: 3px 8px;
+            border-radius: 2px;
+            white-space: nowrap;
+        }
+
+        h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 17px;
+            font-weight: 600;
+            font-style: italic;
+            color: var(--gold-light);
+            margin: 24px 0 10px;
+        }
+
+        p {
+            margin-bottom: 14px;
+            color: var(--text-primary);
+        }
+
+        ul, ol {
+            padding-left: 0;
+            margin-bottom: 16px;
+            list-style: none;
+        }
+
+        ul li, ol li {
+            padding: 6px 0 6px 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            position: relative;
+        }
+
+        ul li:last-child, ol li:last-child { border-bottom: none; }
+
+        ul li::before {
+            content: '◆';
+            position: absolute;
+            left: 0;
+            color: var(--gold-dark);
+            font-size: 9px;
+            top: 12px;
+        }
+
+        strong {
+            color: var(--gold-light);
+            font-weight: 600;
+        }
+
+        a {
+            color: var(--gold-light);
+            text-decoration: none;
+            border-bottom: 1px solid var(--gold-border);
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        a:hover {
+            color: var(--gold-primary);
+            border-bottom-color: var(--gold-primary);
+        }
+
+        /* ── Callout boxes ── */
+        .callout {
+            background: var(--bg-card);
+            border: 1px solid var(--gold-border);
+            border-left: 4px solid var(--gold-primary);
+            padding: 18px 22px;
+            margin: 24px 0;
+        }
+
+        .callout-label {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 8px;
+        }
+
+        .callout p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+
+        /* ── Tables ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0 24px;
+            font-size: 15px;
+        }
+
+        thead th {
+            background: var(--bg-card);
+            color: var(--gold-primary);
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 12px 16px;
+            border: 1px solid var(--gold-border);
+            text-align: left;
+        }
+
+        tbody td {
+            padding: 11px 16px;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            vertical-align: top;
+            line-height: 1.6;
+        }
+
+        tbody tr:nth-child(even) td {
+            background: rgba(201, 168, 76, 0.03);
+        }
+
+        tbody tr:hover td {
+            background: rgba(201, 168, 76, 0.06);
+        }
+
+        /* ── Footer ── */
+        .doc-footer {
+            margin-top: 60px;
+            padding-top: 28px;
+            border-top: 1px solid var(--gold-border);
+            text-align: center;
+        }
+
+        .doc-footer p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.9;
+        }
+
+        .doc-footer .footer-brand {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 15px;
+            color: var(--gold-primary);
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        .doc-footer .compliance-note {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 12px;
+            font-style: italic;
+        }
+
+        /* ── Back to top ── */
+        .back-to-top {
+            display: inline-block;
+            margin-top: 28px;
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 12px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--gold-dark);
+            border: 1px solid var(--gold-border);
+            padding: 8px 20px;
+            text-decoration: none;
+            border-bottom: 1px solid var(--gold-border);
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .back-to-top:hover {
+            color: var(--gold-primary);
+            border-color: var(--gold-primary);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 680px) {
+            .page-wrapper { padding: 32px 20px 60px; }
+            body::before { top: 6px; left: 6px; right: 6px; bottom: 6px; }
+            .title-block h1 { font-size: 30px; }
+            .meta-grid { grid-template-columns: 1fr; gap: 4px; padding: 14px 20px; }
+            table { font-size: 13px; }
+            thead th, tbody td { padding: 9px 10px; }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper" id="top">
+
+    <!-- Site Header -->
+    <header class="site-header">
+        <div class="brand">Antyke High Street</div>
+    </header>
+
+    <!-- Title Block -->
+    <div class="title-block">
+        <h1>Dealer Connect</h1>
+        <p class="subtitle">Privacy Policy</p>
+
+        <div class="ornament"><span>✦</span></div>
+
+        <div class="meta-grid">
+            <span class="meta-label">Effective Date</span>
+            <span class="meta-value">July 31, 2026</span>
+            <span class="meta-label">Platform</span>
+            <span class="meta-value">Android (Google Play Store)</span>
+            <span class="meta-label">Developer</span>
+            <span class="meta-value">Stephen &nbsp;·&nbsp; Phoenix, AZ, United States</span>
+            <span class="meta-label">Contact</span>
+            <span class="meta-value"><a href="mailto:sfm9497@gmail.com">sfm9497@gmail.com</a></span>
+        </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <nav class="toc" aria-label="Table of Contents">
+        <div class="toc-title">Contents</div>
+        <ol>
+            <li><a href="#section-1">Introduction</a></li>
+            <li><a href="#section-2">Information We Collect</a></li>
+            <li><a href="#section-3">How We Use Your Information</a></li>
+            <li><a href="#section-4">Data Sharing and Third-Party Services</a></li>
+            <li><a href="#section-5">Data Retention</a></li>
+            <li><a href="#section-6">Your Privacy Rights</a></li>
+            <li><a href="#section-7">Children's Privacy (COPPA)</a></li>
+            <li><a href="#section-8">Security Practices</a></li>
+            <li><a href="#section-9">Cookies and Tracking Technologies</a></li>
+            <li><a href="#section-10">Changes to This Privacy Policy</a></li>
+            <li><a href="#section-11">Contact Information</a></li>
+        </ol>
+    </nav>
+
+    <!-- 1. Introduction -->
+    <section class="policy-section" id="section-1">
+        <h2><span class="section-num">01</span> Introduction</h2>
+        <p>Dealer Connect is a mobile application designed for Android devices and published on the Google Play Store. Its purpose is to connect dealers, sales professionals, and team members within a dealership or automotive network, enabling streamlined communication, coordination, and information sharing across the organization.</p>
+        <p>We are committed to protecting the privacy of every individual who uses Dealer Connect. This Privacy Policy explains what information we collect, why we collect it, how we use and protect it, and what rights you have over your personal data. We have written this document in plain English so that it is easy to understand, while ensuring it satisfies applicable legal requirements.</p>
+        <p>This policy applies to all users of the Dealer Connect mobile application and covers all data collected through the app, whether you access it as a registered user or otherwise interact with its features. It does not apply to third-party websites, services, or applications that may be linked from within the app — those are governed by their own privacy policies.</p>
+        <div class="callout">
+            <div class="callout-label">Effective Date Notice</div>
+            <p>This Privacy Policy is effective as of <strong>July 31, 2026</strong>. By downloading, installing, or using Dealer Connect, you acknowledge that you have read, understood, and agree to the practices described in this policy.</p>
+        </div>
+    </section>
+
+    <div class="ornament"><span>✦</span></div>
+
+    <!-- 2. Information We Collect -->
+    <section class="policy-section" id="section-2">
+        <h2><span class="section-num">02</span> Information We Collect</h2>
+        <p>In order to provide you with a functional and secure experience, Dealer Connect collects several categories of information. We collect only what is necessary to operate the app and deliver its features. Below is a detailed breakdown of each category.</p>
+
+        <h3>2.1 Personal Information</h3>
+        <p>When you create an account or use the app, we may collect the following personal details:</p>
+        <ul>
+            <li><strong>Full name</strong> — used to identify you within the app and to other connected users in your network.</li>
+            <li><strong>Email address</strong> — used for account creation, login, and service-related communications.</li>
+            <li><strong>Phone number</strong> — used for verification purposes and, if enabled, for direct contact features within the app.</li>
+            <li><strong>Account credentials</strong> — passwords are stored in hashed, encrypted form and are never readable in plain text by our team.</li>
+        </ul>
+
+        <h3>2.2 Device Information</h3>
+        <p>We automatically collect certain technical information about the device you use to access Dealer Connect:</p>
+        <ul>
+            <li><strong>Device identifier (Device ID)</strong> — used to associate your session with your device for security and fraud prevention.</li>
+            <li><strong>Operating system version</strong> — helps us ensure compatibility and address platform-specific issues.</li>
+            <li><strong>Hardware model</strong> — used to optimize the app experience for your specific device type.</li>
+        </ul>
+
+        <h3>2.3 Usage Data</h3>
+        <p>We collect data about how you interact with the app in order to improve its performance and your overall experience:</p>
+        <ul>
+            <li><strong>Features accessed</strong> — which screens, tools, and features you use within the app.</li>
+            <li><strong>Session duration</strong> — how long you spend in the app per session.</li>
+            <li><strong>In-app actions</strong> — button taps, searches, and other interactions (not content).</li>
+            <li><strong>Crash logs and error reports</strong> — diagnostic information generated when the app encounters a problem, used to diagnose and fix bugs.</li>
+        </ul>
+
+        <h3>2.4 Location Data</h3>
+        <p>Dealer Connect may collect general or approximate location information (such as city or region) derived from your device's IP address for the purpose of improving service delivery and providing regionally relevant features. If any feature of the app requires access to your device's precise GPS location, we will request your explicit consent before collecting such data, in accordance with Android platform permissions. You may revoke location permissions at any time through your device settings.</p>
+
+        <h3>2.5 Communications and Content</h3>
+        <p>If you use messaging, file sharing, or other collaborative features within Dealer Connect, we may collect:</p>
+        <ul>
+            <li><strong>Messages and chat content</strong> sent between users within the app.</li>
+            <li><strong>Uploaded files or media</strong> (such as images, documents, or attachments) shared through the app's features.</li>
+            <li>This content is stored to deliver the service and may be retained in accordance with our data retention practices described in Section 5.</li>
+        </ul>
+
+        <h3>2.6 Third-Party Sign-In Data</h3>
+        <p>If you choose to sign in using a third-party authentication provider such as Google (via OAuth), we may receive certain profile information from that provider — typically your name, email address, and profile picture — as permitted by your settings with that provider. We do not receive or store your third-party account password. Your use of third-party sign-in services is also governed by the privacy policy of the respective provider.</p>
+    </section>
+
+    <div class="ornament"><span>✦</span></div>
+
+    <!-- 3. How We Use Your Information -->
+    <section class="policy-section" id="section-3">
+        <h2><span class="section-num">03</span> How We Use Your Information</h2>
+        <p>We use the information we collect for specific, legitimate purposes directly related to operating Dealer Connect and providing a reliable, secure experience for all users. We do not use your information for purposes that are incompatible with the reasons it was originally collected.</p>
+        <ul>
+            <li><strong>To operate and maintain the app:</strong> We use your information to deliver the core features of Dealer Connect, keep the app running smoothly, and ensure a consistent user experience.</li>
+            <li><strong>To authenticate users and manage accounts:</strong> Your credentials and device information are used to verify your identity at login and to maintain the security of your account.</li>
+            <li><strong>To facilitate communication between dealers and users:</strong> Messages, profiles, and shared content enable the collaborative features that are central to the app's purpose.</li>
+            <li><strong>To improve performance and fix bugs:</strong> Usage data and crash logs help us identify problems, prioritize updates, and enhance the app over time.</li>
+            <li><strong>To send transactional and service-related communications:</strong> We may send you emails or in-app notifications about your account, changes to the service, or important policy updates. These are not promotional messages and cannot be fully opted out of while your account remains active.</li>
+            <li><strong>To comply with legal obligations:</strong> We may process or retain certain data as required by applicable law, regulation, or court order.</li>
+            <li><strong>To detect and prevent fraud or abuse:</strong> We analyze usage patterns and device information to identify suspicious activity, protect other users, and enforce our Terms of Service.</li>
+        </ul>
+    </section>
+
+    <div class="ornament"><span>✦</span></div>
+
+    <!-- 4. Data Sharing -->
+    <section class="policy-section" id="section-4">
+        <h2><span class="section-num">04</span> Data Sharing and Third-Party Services</h2>
+        <p>We respect your privacy and do not sell, rent, or trade your personal information to third parties for marketing or commercial purposes. However, the operation of Dealer Connect requires us to engage certain trusted third-party service providers. This section explains who those parties are and under what circumstances your data may be shared.</p>
+
+        <h3>4.1 We Do Not Sell Your Data</h3>
+        <p>Dealer Connect does not sell personal data to any third party, including data brokers, advertisers, or marketing platforms. This applies to all users, including California residents exercising rights under the California Consumer Privacy Act (CCPA).</p>
+
+        <h3>4.2 Third-Party Service Providers</h3>
+        <p>We work with the following categories of service providers who process data on our behalf and are bound by data processing agreements:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Service Provider / Category</th>
+                    <th>Purpose</th>
+                    <th>Data Involved</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Firebase / Google Analytics (Google LLC)</td>
+                    <td>App analytics, crash reporting, and performance monitoring</td>
+                    <td>Usage data, device info, crash logs</td>
+                </tr>
+                <tr>
+                    <td>Cloud Storage Providers</td>
+                    <td>Secure storage of user content, account data, and app data</td>
+                    <td>Account info, uploaded files, messages</td>
+                </tr>
+                <tr>
+                    <td>Crash Reporting Tools (e.g., Firebase Crashlytics)</td>
+                    <td>Automated detection and reporting of app errors and crashes</td>
+                    <td>Device info, OS version, crash stack traces</td>
+                </tr>
+                <tr>
+                    <td>Authentication Providers (e.g., Google OAuth)</td>
+                    <td>Secure third-party sign-in functionality</td>
+                    <td>Name, email address, profile photo (if applicable)</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>Each third-party service provider operates under its own privacy policy and terms of service. We encourage you to review those policies independently. All third-party SDKs and integrations used within Dealer Connect are vetted for compliance with applicable privacy standards and current Google Play Store policies, including Google Play's 2026 requirements governing the use of third-party SDKs and AI integrations.</p>
+
+        <h3>4.3 Legal Disclosures</h3>
+        <p>We may disclose your personal information to government authorities, law enforcement agencies, or other parties when required to do so by law, regulation, subpoena, court order, or other valid legal process. We will make reasonable efforts to notify you of such requests where legally permissible.</p>
+
+        <h3>4.4 Business Transfers</h3>
+        <p>In the event of a merger, acquisition, asset sale, reorganization, or other corporate transaction involving Dealer Connect or its developer, your personal information may be transferred as part of that transaction. You will be notified of any such change via in-app notice or email, and your continued use of the app after the transfer will be subject to the privacy policy of the successor entity.</p>
+    </section>
+
+    <div class="ornament"><span>✦</span></div>
+
+    <!-- 5. Data Retention -->
+    <section class="policy-section" id="section-5">
+        <h2><span class="section-num">05</span> Data Retention</h2>
+        <p>We retain personal data only for as long as is necessary to fulfill the purposes for which it was collected, or as required by applicable law. The following table summarizes our standard retention periods by data category.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data Category</th>
+                    <th>Retention Period</th>
+                    <th>Basis for Retention</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Account information (name, email, phone)</td>
+                    <td>Retained while account is active</td>
+                    <td>Service delivery and account management</td>
+                </tr>
+                <tr>
+                    <td>Messages and shared content</td>
+                    <td>Retained while account is active; deleted within 30 days of account closure</td>
+                    <td>Service delivery</td>
+                </tr>
+                <tr>
+                    <td>Usage and analytics data</td>
+                    <td>Up to 12 months from date of collection</td>
+                    <td>Performance monitoring and improvement</td>
+                </tr>
+                <tr>
+                    <td>Crash logs and diagnostic data</td>
+                    <td>Up to 12 months from date of generation</td>
+                    <td>Bug resolution and stability monitoring</td>
+                </tr>
+                <tr>
+                    <td>Legal and compliance records</td>
+                    <td>As required by applicable law (typically up to 7 years)</td>
+                    <td>Legal obligation</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>When you close your Dealer Connect account, we will delete or anonymize your personal data within <strong>30 days</strong>, except where retention is required by law or where data has been anonymized for aggregate statistical purposes. Anonymized data cannot be used to identify you and is not subject to this policy.</p>
+    </section>
+
+    <div class="ornament"><span>✦</span></div>
+
+    <!-- 6. User Rights -->
+    <section class="policy-section" id="section-6">
+        <h2><span class="section-num">06</span> Your Privacy Rights</h2>
+        <p>Depending on your location, you may have specific legal rights regarding your personal information. We are committed to honoring those rights and providing a straightforward way for you to exercise them.</p>
+
+        <h3>6.1 General Rights (All Users)</h3>
+        <p>All users of Dealer Connect have the right to:</p>
+        <ul>
+            <li><strong>Access:</strong> Request a copy of the personal data we hold about you.</li>
+            <li><strong>Correction:</strong> Request that we correct any inaccurate or incomplete personal information.</li>
+            <li><strong>Deletion:</strong> Request that we delete your personal data, subject to legal retention requirements.</li>
+            <li><strong>Opt-out of non-essential communications:</strong> Unsubscribe from any optional promotional or informational messages. Note that transactional and account-related communications are required for service operation and cannot be fully disabled while your account is active.</li>
+            <li><strong>Data portability:</strong> Request a copy of your personal data in a structured, machine-readable format where technically feasible.</li>
+        </ul>
+
+        <h3>6.2 California Residents — CCPA Rights</h3>
+        <p>If you are a California resident, the California Consumer Privacy Act (CCPA), as amended by the California Privacy Rights Act (CPRA), provides you with additional rights:</p>
+        <ul>
+            <li><strong>Right to Know:</strong> You may request disclosure of the categories and specific pieces of personal information we have collected about you, and the purposes for which it is used.</li>
+            <li><strong>Right to Delete:</strong> You may request deletion of your personal information, subject to certain exceptions permitted by law.</li>
+            <li><strong>Right to Correct:</strong> You may request correction of inaccurate personal information we maintain about you.</li>
+            <li><strong>Right to Opt Out of Sale or Sharing:</strong> We do not sell or share personal information for cross-context behavioral advertising. No opt-out action is required, but you may contact us to confirm this.</li>
+            <li><strong>Right to Non-Discrimination:</strong> We will not discriminate against you for exercising any of your CCPA rights.</li>
+        </ul>
+
+        <h3>6.3 EEA and United Kingdom Residents — GDPR Rights</h3>
+        <p>If you are located in the European Economic Area (EEA) or the United Kingdom, the General Data Protection Regulation (GDPR) or UK GDPR, as applicable, grants you the following rights:</p>
+        <ul>
+            <li><strong>Right of Access (Art. 15):</strong> Obtain confirmation of whether we process your data and receive a copy of it.</li>
+            <li><strong>Right to Rectification (Art. 16):</strong> Have inaccurate personal data corrected without undue delay.</li>
+            <li><strong>Right to Erasure (Art. 17):</strong> Request deletion of your data ("right to be forgotten") under applicable circumstances.</li>
+            <li><strong>Right to Restriction of Processing (Art. 18):</strong> Request that we restrict how we process your data in certain situations.</li>
+            <li><strong>Right to Data Portability (Art. 20):</strong> Receive your data in a structured, commonly used, machine-readable format and transmit it to another controller.</li>
+            <li><strong>Right to Object (Art. 21):</strong> Object to processing of your personal data on grounds relating to your particular situation.</li>
+            <li><strong>Right to Lodge a Complaint:</strong> You have the right to lodge a complaint with the relevant data protection supervisory authority in your country of residence if you believe your data protection rights have been violated.</li>
+        </ul>
+
+        <h3>6.4 How to Exercise Your Rights</h3>
+        <p>To submit any privacy-related request, please contact us by email at <a href="mailto:sfm9497@gmail.com">sfm9497@gmail.com</a>. Include your name, the email address associated with your account, and a description of your request. We will respond within the timeframe required by applicable law — generally within <strong>30 days</strong> for CCPA requests and within <strong>30 days</strong> (extendable by two months for complex requests) for GDPR requests.</p>
+    </section>
+
+    <div class="ornament"><span>✦</span></div>
+
+    <!-- 7. Children's Privacy -->
+    <section class="policy-section" id="section-7">
+        <h2><span class="section-num">07</span> Children's Privacy (COPPA)</h2>
+        <p>Protecting the privacy of children is a priority. This section explains our practices with respect to users under the age of 13 in compliance with the Children's Online Privacy Protection Act (COPPA) and applicable international laws.</p>
+        <ul>
+            <li>Dealer Connect is <strong>not directed at children under the age of 13</strong>. The app is intended for use by adults operating within a professional dealership or automotive business environment.</li>
+            <li>We do <strong>not knowingly collect, solicit, or maintain personal information from any child under the age of 13</strong>. Our account registration process requires users to confirm they are 13 years of age or older.</li>
+            <li>If we discover or are notified that we have inadvertently collected personal information from a child under 13, we will <strong>promptly delete that information</strong> from our systems without undue delay.</li>
+            <li>If you are a parent or guardian and believe your child under 13 has provided us with personal information, please contact us immediately at <a href="mailto:sfm9497@gmail.com">sfm9497@gmail.com</a> so that we can take appropriate action.</li>
+        </ul>
+    </section>
+
+    <div class="ornament"><span>✦</span></div>
+
+    <!-- 8. Security Practices -->
+    <section class="policy-section" id="section-8">
+        <h2><span class="section-num">08</span> Security Practices</h2>
+        <p>We implement a range of technical and organizational security measures designed to protect your personal information from unauthorized access, disclosure, alteration, or destruction. While no system can guarantee absolute security, we take your data security seriously and continuously work to maintain and improve our safeguards.</p>
+        <ul>
+            <li><strong>Encryption in transit:</strong> All data transmitted between the Dealer Connect app and our servers is encrypted using TLS (Transport Layer Security) / HTTPS protocols, preventing interception during transmission.</li>
+            <li><strong>Encryption at rest:</strong> Personal data and user content stored on our servers is encrypted at rest using industry-standard encryption algorithms.</li>
+            <li><strong>Access controls and authentication:</strong> Access to user data is restricted to authorized personnel only, on a need-to-know basis. We enforce strong authentication measures for all administrative access to backend systems.</li>
+            <li><strong>Password security:</strong> User passwords are hashed using a secure one-way hashing algorithm. We do not store passwords in plain text and are unable to retrieve them.</li>
+            <li><strong>Regular security reviews:</strong> We conduct periodic reviews of our security practices, infrastructure configurations, and third-party integrations to identify and address potential vulnerabilities.</li>
+            <li><strong>Incident response:</strong> In the event of a data breach that affects your personal information, we will notify affected users and, where required, relevant regulatory authorities in accordance with applicable law.</li>
+        </ul>
+        <div class="callout">
+            <div class="callout-label">Important Disclaimer</div>
+            <p>No method of data transmission over the internet or electronic storage is 100% secure. While we strive to use commercially reasonable means to protect your personal information, we cannot guarantee absolute security. You use the app at your own risk with respect to security vulnerabilities that are beyond our reasonable control.</p>
+        </div>
+    </section>
+
+    <div class="ornament"><span>✦</span></div>
+
+    <!-- 9. Cookies and Tracking -->
+    <section class="policy-section" id="section-9">
+        <h2><span class="section-num">09</span> Cookies and Tracking Technologies</h2>
+        <p>As a mobile application, Dealer Connect does not use browser cookies in the traditional sense. However, we and our third-party service providers may use similar tracking technologies to support analytics and session management functions within the app.</p>
+
+        <h3>9.1 Technologies We Use</h3>
+        <ul>
+            <li><strong>Device identifiers:</strong> A unique identifier associated with your device may be used to distinguish your device from others for analytics and fraud prevention purposes.</li>
+            <li><strong>Analytics SDKs:</strong> We use software development kits (SDKs) such as Firebase Analytics to collect aggregated, anonymized data about app usage. This data helps us understand how users interact with features and identify areas for improvement.</li>
+            <li><strong>Session tokens:</strong> Temporary session tokens are used to maintain your authenticated state while using the app and are invalidated when you log out or after a period of inactivity.</li>
+        </ul>
+
+        <h3>9.2 Purpose of Tracking Technologies</h3>
+        <ul>
+            <li><strong>Analytics:</strong> To understand feature usage, session patterns, and overall app health.</li>
+            <li><strong>Session management:</strong> To keep you securely logged in during an active session.</li>
+            <li><strong>Crash and error detection:</strong> To automatically identify and report technical issues for prompt resolution.</li>
+        </ul>
+
+        <h3>9.3 Opt-Out Options</h3>
+        <p>You may limit certain tracking by adjusting the privacy settings on your Android device, including resetting or disabling your advertising ID through your device's Google settings. Additionally, you may opt out of Firebase Analytics data collection by contacting us at <a href="mailto:sfm9497@gmail.com">sfm9497@gmail.com</a> to request that your data be excluded from analytics processing. Note that opting out of analytics data collection does not affect the core functionality of the app.</p>
+    </section>
+
+    <div class="ornament"><span>✦</span></div>
+
+    <!-- 10. Changes -->
+    <section class="policy-section" id="section-10">
+        <h2><span class="section-num">10</span> Changes to This Privacy Policy</h2>
+        <p>We may update this Privacy Policy from time to time to reflect changes in our data practices, new features of the app, changes in applicable law, or for other operational reasons. We are committed to keeping you informed of any material changes.</p>
+        <ul>
+            <li><strong>Notification of changes:</strong> If we make a material change to this Privacy Policy — meaning a change that significantly affects how we collect, use, or share your personal information — we will notify you via an in-app notice or a notification sent to the email address associated with your account, prior to the change taking effect.</li>
+            <li><strong>Updated effective date:</strong> The "Effective Date" at the top of this document will always reflect the date on which the most recent version of the policy became effective.</li>
+            <li><strong>Continued use constitutes acceptance:</strong> Your continued use of Dealer Connect following the posting of an updated Privacy Policy constitutes your acceptance of the revised terms. If you do not agree with the changes, you should discontinue use of the app and may request deletion of your account.</li>
+            <li><strong>Prior versions:</strong> Previous versions of this Privacy Policy may be made available upon request by contacting us at <a href="mailto:sfm9497@gmail.com">sfm9497@gmail.com</a>.</li>
+        </ul>
+    </section>
+
+    <div class="ornament"><span>✦</span></div>
+
+    <!-- 11. Contact -->
+    <section class="policy-section" id="section-11">
+        <h2><span class="section-num">11</span> Contact Information</h2>
+        <p>If you have any questions, concerns, or requests related to this Privacy Policy or our data practices, we encourage you to reach out to us. We take privacy inquiries seriously and will respond promptly.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Contact Detail</th>
+                    <th>Information</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Developer / Data Controller</td>
+                    <td>Stephen</td>
+                </tr>
+                <tr>
+                    <td>Email Address</td>
+                    <td><a href="mailto:sfm9497@gmail.com">sfm9497@gmail.com</a></td>
+                </tr>
+                <tr>
+                    <td>Location</td>
+                    <td>Phoenix, AZ, United States</td>
+                </tr>
+                <tr>
+                    <td>Application Name</td>
+                    <td>Dealer Connect</td>
+                </tr>
+                <tr>
+                    <td>Platform</td>
+                    <td>Android (Google Play Store)</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>You may contact us at any time to: request access to or deletion of your personal data, ask questions about how your data is used, report a privacy concern or suspected data breach, or request an accessible format of this Privacy Policy.</p>
+        <p>We are committed to working with you to resolve any concerns regarding your privacy. If you are an EEA or UK resident and are not satisfied with our response, you retain the right to lodge a complaint with your local data protection supervisory authority.</p>
+    </section>
+
+    <!-- Footer -->
+    <div class="ornament"><span>✦</span></div>
+    <footer class="doc-footer">
+        <p class="footer-brand">Dealer Connect &nbsp;·&nbsp; Privacy Policy</p>
+        <p>Effective Date: July 31, 2026 &nbsp;·&nbsp; Version 1.0</p>
+        <p>Developer: Stephen &nbsp;·&nbsp; Phoenix, AZ, United States &nbsp;·&nbsp; <a href="mailto:sfm9497@gmail.com">sfm9497@gmail.com</a></p>
+        <p>Published on the Google Play Store &nbsp;·&nbsp; Android Platform</p>
+        <p class="compliance-note">Prepared in compliance with GDPR, CCPA/CPRA, COPPA, and 2026 Google Play Store Data Safety requirements.</p>
+        <a href="#top" class="back-to-top">↑ Return to Top</a>
+    </footer>
+
+</div>
+</body>
+</html>

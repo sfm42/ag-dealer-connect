@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Deletion Request – Dealer Connect | Antyke High Street</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-primary:    #0d0d0d;
+            --bg-secondary:  #111418;
+            --bg-card:       #161a1f;
+            --gold-primary:  #c9a84c;
+            --gold-light:    #e2c47a;
+            --gold-dark:     #8c6e2a;
+            --gold-border:   #3a2e14;
+            --text-primary:  #e8dfc8;
+            --text-secondary:#b0a080;
+            --text-muted:    #7a6f58;
+            --border-subtle: #2a2218;
+            --error:         #c0533a;
+            --error-bg:      #1a0c08;
+            --success:       #5a9e6f;
+            --success-bg:    #081410;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'EB Garamond', Georgia, serif;
+            font-size: 17px;
+            line-height: 1.85;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            background-image:
+                radial-gradient(ellipse at 20% 0%, rgba(201,168,76,0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 100%, rgba(201,168,76,0.03) 0%, transparent 60%);
+            min-height: 100vh;
+        }
+
+        /* Ornamental border frame */
+        body::before {
+            content: '';
+            display: block;
+            position: fixed;
+            top: 12px; left: 12px; right: 12px; bottom: 12px;
+            border: 1px solid var(--gold-border);
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* ── Page wrapper ── */
+        .page-wrapper {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 60px 48px 80px;
+        }
+
+        /* ── Site header ── */
+        .site-header {
+            text-align: center;
+            padding: 40px 0 32px;
+            border-bottom: 1px solid var(--gold-border);
+            margin-bottom: 48px;
+        }
+
+        .site-header .brand {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+        }
+
+        /* ── Ornament divider ── */
+        .ornament {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin: 28px 0;
+        }
+
+        .ornament::before,
+        .ornament::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--gold-dark), transparent);
+        }
+
+        .ornament span {
+            font-size: 16px;
+            color: var(--gold-primary);
+        }
+
+        /* ── Title block ── */
+        .title-block {
+            text-align: center;
+            margin-bottom: 44px;
+        }
+
+        .title-block h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 38px;
+            font-weight: 700;
+            color: var(--gold-primary);
+            letter-spacing: 0.04em;
+            line-height: 1.2;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 24px rgba(201,168,76,0.2);
+        }
+
+        .title-block .subtitle {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 18px;
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+
+        /* ── Intro text ── */
+        .intro-card {
+            background: var(--bg-card);
+            border: 1px solid var(--gold-border);
+            border-left: 4px solid var(--gold-primary);
+            padding: 22px 28px;
+            margin-bottom: 40px;
+        }
+
+        .intro-card p {
+            font-size: 15.5px;
+            color: var(--text-secondary);
+            line-height: 1.75;
+            margin-bottom: 10px;
+        }
+
+        .intro-card p:last-child { margin-bottom: 0; }
+
+        .intro-card strong { color: var(--gold-light); }
+
+        /* ── Process steps ── */
+        .process-steps {
+            display: flex;
+            gap: 0;
+            margin-bottom: 40px;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 20px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--gold-border);
+            border-right: none;
+            position: relative;
+        }
+
+        .step:last-child { border-right: 1px solid var(--gold-border); }
+
+        .step-num {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--gold-dark);
+            display: block;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .step-label {
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            display: block;
+            line-height: 1.3;
+        }
+
+        .step.active .step-num { color: var(--gold-primary); }
+        .step.active .step-label { color: var(--text-secondary); }
+        .step.active { background: rgba(201,168,76,0.05); }
+
+        /* ── Form ── */
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--gold-border);
+            padding: 38px 40px;
+            margin-bottom: 32px;
+        }
+
+        .form-section-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--gold-primary);
+            margin-bottom: 22px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--gold-border);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group:last-child { margin-bottom: 0; }
+
+        label {
+            display: block;
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        label .required {
+            color: var(--gold-primary);
+            margin-left: 3px;
+        }
+
+        label .optional {
+            color: var(--text-muted);
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            margin-left: 6px;
+            text-transform: none;
+            font-style: italic;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select,
+        textarea {
+            width: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--gold-border);
+            color: var(--text-primary);
+            font-family: 'EB Garamond', Georgia, serif;
+            font-size: 16px;
+            padding: 12px 16px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+            border-radius: 0;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 0 2px rgba(201,168,76,0.12);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238c6e2a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+            cursor: pointer;
+        }
+
+        select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.6;
+        }
+
+        .field-hint {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        /* Two-column row */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* ── Confirmation checkbox ── */
+        .confirm-block {
+            background: rgba(201,168,76,0.04);
+            border: 1px solid var(--gold-border);
+            padding: 20px 22px;
+            margin: 28px 0 0;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .confirm-block input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            min-width: 18px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: var(--bg-secondary);
+            border: 1px solid var(--gold-border);
+            cursor: pointer;
+            position: relative;
+            top: 4px;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .confirm-block input[type="checkbox"]:checked {
+            background: var(--gold-primary);
+            border-color: var(--gold-primary);
+        }
+
+        .confirm-block input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            color: #0d0d0d;
+            font-size: 12px;
+            font-weight: 700;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .confirm-block label {
+            font-family: 'EB Garamond', Georgia, serif;
+            font-size: 15px;
+            letter-spacing: 0;
+            text-transform: none;
+            color: var(--text-secondary);
+            font-weight: 400;
+            line-height: 1.6;
+            cursor: pointer;
+        }
+
+        .confirm-block label strong { color: var(--gold-light); }
+
+        /* ── Divider between form sections ── */
+        .form-divider {
+            border: none;
+            border-top: 1px solid var(--border-subtle);
+            margin: 28px 0;
+        }
+
+        /* ── Submit button ── */
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 16px 32px;
+            background: transparent;
+            border: 1px solid var(--gold-primary);
+            color: var(--gold-primary);
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            margin-top: 32px;
+            position: relative;
+        }
+
+        .submit-btn:hover {
+            background: var(--gold-primary);
+            color: #0d0d0d;
+            box-shadow: 0 4px 24px rgba(201,168,76,0.18);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .submit-btn:disabled:hover {
+            background: transparent;
+            color: var(--gold-primary);
+            box-shadow: none;
+        }
+
+        /* ── Error / validation messages ── */
+        .field-error {
+            font-size: 13px;
+            color: #e07060;
+            margin-top: 6px;
+            display: none;
+            font-style: italic;
+        }
+
+        .field-error.visible { display: block; }
+
+        input.invalid, select.invalid, textarea.invalid {
+            border-color: var(--error);
+        }
+
+        /* ── Success panel ── */
+        #success-panel {
+            display: none;
+            background: var(--success-bg);
+            border: 1px solid var(--success);
+            padding: 40px 36px;
+            text-align: center;
+        }
+
+        #success-panel .success-icon {
+            font-size: 36px;
+            color: var(--success);
+            display: block;
+            margin-bottom: 14px;
+        }
+
+        #success-panel h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gold-light);
+            margin-bottom: 12px;
+        }
+
+        #success-panel p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 10px;
+        }
+
+        #success-panel .ref-number {
+            display: inline-block;
+            background: var(--bg-card);
+            border: 1px solid var(--gold-border);
+            color: var(--gold-primary);
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 13px;
+            letter-spacing: 0.2em;
+            padding: 8px 20px;
+            margin: 10px 0 6px;
+        }
+
+        /* ── Footer note ── */
+        .legal-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--gold-border);
+        }
+
+        .legal-footer p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        .legal-footer a {
+            color: var(--gold-dark);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border-subtle);
+            transition: color 0.2s;
+        }
+
+        .legal-footer a:hover { color: var(--gold-primary); }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .page-wrapper { padding: 32px 20px 60px; }
+            body::before { top: 6px; left: 6px; right: 6px; bottom: 6px; }
+            .title-block h1 { font-size: 28px; }
+            .form-card { padding: 26px 20px; }
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .process-steps { flex-direction: column; }
+            .step { border-right: 1px solid var(--gold-border); border-bottom: none; }
+            .step:last-child { border-bottom: 1px solid var(--gold-border); }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrapper" id="top">
+
+    <!-- Site Header -->
+    <header class="site-header">
+        <div class="brand">Antyke High Street</div>
+    </header>
+
+    <!-- Title -->
+    <div class="title-block">
+        <h1>Data Deletion Request</h1>
+        <p class="subtitle">Dealer Connect &mdash; User Privacy Rights</p>
+    </div>
+
+    <div class="ornament"><span>✦</span></div>
+
+    <!-- Intro card -->
+    <div class="intro-card">
+        <p>Under applicable privacy law — including the <strong>GDPR</strong>, <strong>CCPA</strong>, and <strong>COPPA</strong> — you have the right to request the complete deletion of your personal data from our systems. This form allows you to submit a formal deletion request directly to the Dealer Connect administrator.</p>
+        <p>Once received, we will verify your identity and process your request within <strong>30 days</strong>. You will receive a confirmation email when your data has been permanently removed. Please note that deletion of your account data is <strong>irreversible</strong>.</p>
+    </div>
+
+    <!-- Process steps -->
+    <div class="process-steps">
+        <div class="step active">
+            <span class="step-num">01</span>
+            <span class="step-label">Submit<br>This Form</span>
+        </div>
+        <div class="step">
+            <span class="step-num">02</span>
+            <span class="step-label">Identity<br>Verification</span>
+        </div>
+        <div class="step">
+            <span class="step-num">03</span>
+            <span class="step-label">Data<br>Deleted</span>
+        </div>
+        <div class="step">
+            <span class="step-num">04</span>
+            <span class="step-label">Confirmation<br>Email Sent</span>
+        </div>
+    </div>
+
+    <!-- Main Form -->
+    <div class="form-card" id="form-card">
+        <form id="deletion-form" novalidate>
+
+            <!-- Personal Details -->
+            <div class="form-section-title">Your Details</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first-name">First Name <span class="required">*</span></label>
+                    <input type="text" id="first-name" name="first_name" placeholder="e.g. John" autocomplete="given-name">
+                    <div class="field-error" id="first-name-error">Please enter your first name.</div>
+                </div>
+                <div class="form-group">
+                    <label for="last-name">Last Name <span class="required">*</span></label>
+                    <input type="text" id="last-name" name="last_name" placeholder="e.g. Smith" autocomplete="family-name">
+                    <div class="field-error" id="last-name-error">Please enter your last name.</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address <span class="required">*</span></label>
+                <input type="email" id="email" name="email" placeholder="The email associated with your account" autocomplete="email">
+                <div class="field-error" id="email-error">Please enter a valid email address.</div>
+                <p class="field-hint">This must match the email address registered to your Dealer Connect account.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="username">In-App Username <span class="optional">optional</span></label>
+                <input type="text" id="username" name="username" placeholder="Your Dealer Connect display name or ID">
+                <p class="field-hint">Providing your username helps us locate your account faster.</p>
+            </div>
+
+            <hr class="form-divider">
+
+            <!-- Request Details -->
+            <div class="form-section-title">Deletion Request</div>
+
+            <div class="form-group">
+                <label for="scope">Scope of Deletion <span class="required">*</span></label>
+                <select id="scope" name="scope">
+                    <option value="" disabled selected>Select what you would like deleted&hellip;</option>
+                    <option value="full_account">Full account &amp; all associated data</option>
+                    <option value="messages">Messages and shared content only</option>
+                    <option value="personal_info">Personal profile information only</option>
+                    <option value="analytics">Usage and analytics data only</option>
+                    <option value="other">Other (please specify below)</option>
+                </select>
+                <div class="field-error" id="scope-error">Please select the scope of your deletion request.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="reason">Reason for Request <span class="optional">optional</span></label>
+                <textarea id="reason" name="reason" placeholder="You are not required to provide a reason, but any context you share helps us process your request more efficiently…"></textarea>
+            </div>
+
+            <hr class="form-divider">
+
+            <!-- Confirmation -->
+            <div class="form-section-title">Confirmation</div>
+
+            <div class="confirm-block">
+                <input type="checkbox" id="confirm-irreversible" name="confirm_irreversible">
+                <label for="confirm-irreversible">
+                    I understand that data deletion is <strong>permanent and irreversible</strong>. Once processed, my data cannot be recovered, and my account access will be permanently revoked.
+                </label>
+            </div>
+            <div class="field-error" id="confirm-error" style="margin-top:8px;">You must acknowledge that this action is irreversible before submitting.</div>
+
+            <div class="confirm-block" style="margin-top:12px;">
+                <input type="checkbox" id="confirm-identity" name="confirm_identity">
+                <label for="confirm-identity">
+                    I confirm that I am the <strong>account holder</strong> or an authorised representative, and that the information provided above is accurate.
+                </label>
+            </div>
+            <div class="field-error" id="identity-error" style="margin-top:8px;">You must confirm your identity before submitting.</div>
+
+            <button type="submit" class="submit-btn" id="submit-btn">
+                ✦ &nbsp; Submit Deletion Request &nbsp; ✦
+            </button>
+
+        </form>
+    </div>
+
+    <!-- Success Panel (hidden until form submitted) -->
+    <div id="success-panel">
+        <span class="success-icon">✦</span>
+        <h2>Request Received</h2>
+        <p>Your data deletion request has been submitted to the Dealer Connect administrator.</p>
+        <p>Your reference number:</p>
+        <div class="ref-number" id="ref-number">—</div>
+        <p style="margin-top:14px;">We will verify your identity and complete your request within <strong>30 days</strong>.<br>
+        A confirmation email will be sent to the address you provided once your data has been permanently removed.</p>
+        <p style="margin-top:16px; font-size:13px; color:var(--text-muted);">If you have not received a confirmation within 30 days, please contact us at<br>
+        <a href="mailto:sfm9497@gmail.com" style="color:var(--gold-dark); border-bottom: 1px solid var(--gold-border);">sfm9497@gmail.com</a></p>
+    </div>
+
+    <div class="ornament"><span>✦</span></div>
+
+    <!-- Legal footer -->
+    <footer class="legal-footer">
+        <p>This request is processed in accordance with our <a href="dealer-connect-privacy-policy.html">Privacy Policy</a>.</p>
+        <p>For questions, contact the administrator at <a href="mailto:sfm9497@gmail.com">sfm9497@gmail.com</a></p>
+        <p style="margin-top:10px; font-size:11px;">Dealer Connect &nbsp;·&nbsp; Antyke High Street &nbsp;·&nbsp; &copy; 2026</p>
+    </footer>
+
+</div><!-- /page-wrapper -->
+
+<script>
+    // ── Generate a reference number ──────────────────────────────────────────
+    function generateRef() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let ref = 'DC-DEL-';
+        for (let i = 0; i < 8; i++) {
+            ref += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return ref;
+    }
+
+    // ── Validation helpers ───────────────────────────────────────────────────
+    function setError(fieldId, errorId, show) {
+        const field = document.getElementById(fieldId);
+        const error = document.getElementById(errorId);
+        if (show) {
+            field && field.classList.add('invalid');
+            error && error.classList.add('visible');
+        } else {
+            field && field.classList.remove('invalid');
+            error && error.classList.remove('visible');
+        }
+    }
+
+    function validateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    // ── Live validation: clear error on input ────────────────────────────────
+    ['first-name', 'last-name', 'email', 'scope'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => {
+                el.classList.remove('invalid');
+                const errEl = document.getElementById(id + '-error');
+                if (errEl) errEl.classList.remove('visible');
+            });
+        }
+    });
+
+    // ── Form submission ──────────────────────────────────────────────────────
+    document.getElementById('deletion-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const firstName  = document.getElementById('first-name').value.trim();
+        const lastName   = document.getElementById('last-name').value.trim();
+        const email      = document.getElementById('email').value.trim();
+        const scope      = document.getElementById('scope').value;
+        const confirmIrr = document.getElementById('confirm-irreversible').checked;
+        const confirmId  = document.getElementById('confirm-identity').checked;
+
+        let valid = true;
+
+        setError('first-name',  'first-name-error',  !firstName);
+        if (!firstName) valid = false;
+
+        setError('last-name',   'last-name-error',   !lastName);
+        if (!lastName) valid = false;
+
+        const emailInvalid = !email || !validateEmail(email);
+        setError('email',  'email-error',  emailInvalid);
+        if (emailInvalid) valid = false;
+
+        setError('scope', 'scope-error', !scope);
+        if (!scope) valid = false;
+
+        const confirmErr  = document.getElementById('confirm-error');
+        const identityErr = document.getElementById('identity-error');
+
+        if (!confirmIrr) {
+            confirmErr.classList.add('visible');
+            valid = false;
+        } else {
+            confirmErr.classList.remove('visible');
+        }
+
+        if (!confirmId) {
+            identityErr.classList.add('visible');
+            valid = false;
+        } else {
+            identityErr.classList.remove('visible');
+        }
+
+        if (!valid) return;
+
+        // ── Build mailto payload ──────────────────────────────────────────────
+        const username = document.getElementById('username').value.trim();
+        const reason   = document.getElementById('reason').value.trim();
+        const ref      = generateRef();
+
+        const scopeLabels = {
+            full_account:  'Full account & all associated data',
+            messages:      'Messages and shared content only',
+            personal_info: 'Personal profile information only',
+            analytics:     'Usage and analytics data only',
+            other:         'Other'
+        };
+
+        const body = [
+            'DATA DELETION REQUEST — DEALER CONNECT',
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+            'Reference Number : ' + ref,
+            'Submitted        : ' + new Date().toUTCString(),
+            '',
+            'REQUESTER DETAILS',
+            '─────────────────',
+            'Name             : ' + firstName + ' ' + lastName,
+            'Email            : ' + email,
+            'Username         : ' + (username || 'Not provided'),
+            '',
+            'REQUEST DETAILS',
+            '───────────────',
+            'Scope            : ' + (scopeLabels[scope] || scope),
+            'Reason           : ' + (reason || 'Not provided'),
+            '',
+            'CONFIRMATIONS',
+            '─────────────',
+            'Acknowledged irreversibility : Yes',
+            'Confirmed identity           : Yes',
+            '',
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+            'This request was submitted via the Dealer Connect Data Deletion Request page.',
+            'Please process within 30 days and send a confirmation to the email address above.'
+        ].join('\n');
+
+        const mailtoLink =
+            'mailto:sfm9497@gmail.com' +
+            '?subject=' + encodeURIComponent('[Dealer Connect] Data Deletion Request – ' + ref) +
+            '&body='    + encodeURIComponent(body);
+
+        // Open mailto
+        window.location.href = mailtoLink;
+
+        // Show success panel
+        document.getElementById('ref-number').textContent = ref;
+        document.getElementById('form-card').style.display = 'none';
+        const successPanel = document.getElementById('success-panel');
+        successPanel.style.display = 'block';
+        successPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+</script>
+</body>
+</html>
