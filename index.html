@@ -639,6 +639,34 @@ tr:last-child td { border-bottom: none; }
 .unhide-btn:hover { background: rgba(201,168,76,0.15); }
 .badge.hidden { background: rgba(154,138,122,0.2); color: #9A8A7A; }
 
+
+/* MULTI-PHOTO CAROUSEL */
+.carousel { position: relative; width: 100%; overflow: hidden; background: #0D0A06; }
+.carousel-track { display: flex; transition: transform 0.3s ease; }
+.carousel-slide { min-width: 100%; position: relative; }
+.carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.carousel-slide .slide-emoji { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+.carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); border: none; color: #C9A84C; font-size: 20px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; z-index: 2; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: background 0.15s; }
+.carousel-btn:hover { background: rgba(201,168,76,0.3); }
+.carousel-btn.prev { left: 8px; }
+.carousel-btn.next { right: 8px; }
+.carousel-dots { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 2; }
+.carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: background 0.15s; }
+.carousel-dot.active { background: #C9A84C; }
+.photo-count-chip { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: #C9A84C; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 99px; z-index: 2; backdrop-filter: blur(4px); }
+
+/* SELLER MULTI-PHOTO UPLOAD */
+.seller-photo-card { background: #1A1408; border: 0.5px solid rgba(201,168,76,0.2); border-radius: 10px; overflow: hidden; margin-bottom: 1rem; }
+.photo-thumbnails { display: flex; gap: 6px; padding: 10px; flex-wrap: wrap; }
+.photo-thumb-wrap { position: relative; width: 72px; height: 72px; border-radius: 6px; overflow: hidden; flex-shrink: 0; border: 0.5px solid rgba(201,168,76,0.2); }
+.photo-thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.photo-thumb-del { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; background: rgba(226,75,74,0.85); border: none; color: #fff; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+.photo-thumb-del:hover { background: #E24B4A; }
+.add-more-btn { width: 72px; height: 72px; border-radius: 6px; border: 1.5px dashed rgba(201,168,76,0.3); background: transparent; color: #C9A84C; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+.add-more-btn:hover { border-color: #C9A84C; background: rgba(201,168,76,0.05); }
+.add-more-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.photo-limit-note { font-size: 11px; color: #7A6A5A; padding: 0 10px 6px; }
+
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .upload-zone.dragging{border-color:#1A1408;background:#FBF7EC20;}
@@ -1566,7 +1594,7 @@ const RESEND = '' // email handled server-side via Edge Function
 const ADMIN_EMAIL = 'sfm9497@gmail.com'
 const sb = createClient(SURL, SKEY)
 
-const APP = { user:null, profile:null, submissions:[], sellers:[], dealers:[], filter:'all', view:'photos', expanded:new Set(), viewing:null, favorites:new Set(), stateFilter:'' }
+const APP = { user:null, profile:null, submissions:[], sellers:[], dealers:[], filter:'all', view:'photos', expanded:new Set(), viewing:null, favorites:new Set(), stateFilter:'', submissionImages:{}, sellerImages:{} }
 
 // ---- STATE FILTER ----
 window.applyStateFilter = function(state){
@@ -1659,14 +1687,21 @@ function renderFavorites(){
     const s=p.profiles||APP.sellers.find(u=>u.id===p.seller_id)
     const card=document.createElement('div')
     card.className='dealer-photo-card'
-    const img=p.image_url?`<img src="${imgThumb(p.image_url,400)}" alt="item" loading="lazy">`:'📷'
+    const images = (APP.submissionImages&&APP.submissionImages[p.id]) || (p.image_url ? [{image_url:p.image_url}] : [])
+    const firstImg = images[0]?.image_url
+    const imgHtml = firstImg ? `<img src="${imgThumb(firstImg,400)}" alt="item" loading="lazy">` : '<span style="font-size:40px;display:flex;align-items:center;justify-content:center;height:100%;">📷</span>'
     const avHtml=s&&s.avatar_url?`<img src="${s.avatar_url}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;">`:`<div style="width:20px;height:20px;border-radius:50%;background:${bg(s?s.id:'x')};display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:${fg(s?s.id:'x')}">${s?ini(s.name):'?'}</div>`
+    const isFav = APP.favorites.has(p.id)
+    const multiChip = images.length > 1 ? `<span class="photo-count-chip">📷 ${images.length}</span>` : ''
+    const isNew = (Date.now() - new Date(p.created_at).getTime()) < 24*60*60*1000
+    const newBadge = isNew ? '<span class="new-badge">NEW</span>' : ''
+    const timeBadge = isNew ? '' : `<span class="time-badge">${ago(p.created_at)}</span>`
     card.innerHTML=`
-      <div class="photo-ph">${img}
-        <button class="fav-btn active" data-id="${p.id}" title="Remove from favorites">♥</button>
+      <div class="photo-ph" style="position:relative;">${imgHtml}${multiChip}
+        <button class="fav-btn ${isFav?'active':''}" data-id="${p.id}" title="${isFav?'Remove from favorites':'Add to favorites'}">${isFav?'♥':'♡'}</button>
       </div>
       <div class="card-footer">
-        <div class="price">${p.price||'Price TBD'}<span class="time-badge">${ago(p.created_at)}</span></div>
+        <div class="price">${p.price||'Price TBD'}${p.negotiable?' <span style="font-size:10px;color:#C9A84C;font-weight:400;">negotiable</span>':''}${newBadge}${timeBadge}</div>
         <div class="desc">${p.description||'No description'}</div>
         <div class="seller-row">${avHtml}<span class="seller-tag">${s?s.name:'Unknown'}</span></div>
       </div>`
@@ -1937,7 +1972,32 @@ async function loadSeller(){
 async function refreshSubs(){
   const{data}=await sb.from('submissions').select('*').eq('seller_id',APP.profile.id).order('created_at',{ascending:false})
   APP.submissions=data||[]
+  if(APP.submissions.length){
+    const ids=APP.submissions.map(s=>s.id)
+    const{data:imgs}=await sb.from('submission_images').select('*').in('submission_id',ids).order('sort_order',{ascending:true})
+    APP.sellerImages={}
+    ;(imgs||[]).forEach(img=>{
+      if(!APP.sellerImages[img.submission_id])APP.sellerImages[img.submission_id]=[]
+      APP.sellerImages[img.submission_id].push(img)
+    })
+  }
   renderSeller()
+}
+
+// Load seller's submissions with their images
+async function loadSellerSubmissions(){
+  const{data:subs}=await sb.from('submissions').select('*').eq('seller_id',APP.profile.id).order('created_at',{ascending:false})
+  APP.submissions=subs||[]
+  // Load images for each submission
+  if(APP.submissions.length){
+    const ids=APP.submissions.map(s=>s.id)
+    const{data:imgs}=await sb.from('submission_images').select('*').in('submission_id',ids).order('sort_order',{ascending:true})
+    APP.sellerImages={}
+    ;(imgs||[]).forEach(img=>{
+      if(!APP.sellerImages[img.submission_id])APP.sellerImages[img.submission_id]=[]
+      APP.sellerImages[img.submission_id].push(img)
+    })
+  }
 }
 
 function daysRemaining(createdAt){
@@ -1947,112 +2007,164 @@ function daysRemaining(createdAt){
 
 function renderSeller(){
   const grid=el('seller-photos-grid')
-  el('photos-count').textContent=`My submissions (${APP.submissions.length})`
+  el('photos-count').textContent=`My listings (${APP.submissions.length})`
   el('delete-all-btn').style.display=APP.submissions.length?'inline-flex':'none'
-  if(!APP.submissions.length){grid.innerHTML='<div class="empty-state">No submissions yet — upload your first item above.</div>';return}
+  if(!APP.submissions.length){grid.innerHTML='<div class="empty-state">No listings yet — upload your first item above.</div>';return}
   grid.innerHTML=''
   APP.submissions.forEach(p=>{
+    const images=(APP.sellerImages&&APP.sellerImages[p.id])||(p.image_url?[{id:null,image_url:p.image_url,image_public_id:p.image_public_id}]:[])
+    const days=daysRemaining(p.created_at)
+    const views=p.view_count||0
+    const daysColor=days<=7?'#E24B4A':days<=14?'#BA7517':'#3B6D11'
+    const isNeg=p.negotiable||false
+    const missingPrice=!p.price||p.price.trim()===''
     const card=document.createElement('div')
-    card.className='photo-card'
-    const img=p.image_url?`<img src="${imgThumb(p.image_url,400)}" alt="item" loading="lazy">`:'📷'
-    const days = daysRemaining(p.created_at)
-    const views = p.view_count||0
-    const daysColor = days <= 7 ? '#E24B4A' : days <= 14 ? '#BA7517' : '#3B6D11'
-    const isNeg = p.negotiable||false
-    const missingPrice = !p.price||p.price.trim()===''
+    card.className='seller-photo-card'
+
+    // Build thumbnail strip
+    const thumbsHtml = images.map((img,i)=>`
+      <div class="photo-thumb-wrap">
+        <img src="${imgThumb(img.image_url,200)}" alt="photo ${i+1}" style="cursor:zoom-in;" onclick="openLightbox('${img.image_url}')">
+        ${img.id?`<button class="photo-thumb-del" title="Delete this photo" onclick="delSinglePhoto('${img.id}','${p.id}',${images.length})">×</button>`:''}
+      </div>`).join('')
+
+    const canAddMore = images.length < 5
+    const addMoreHtml = canAddMore ? `
+      <label class="add-more-btn" title="Add more photos (${5-images.length} remaining)">
+        <input type="file" accept="image/*" multiple style="display:none;" onchange="addPhotosToListing('${p.id}',this)">
+        +
+      </label>` : ''
+    const limitNote = !canAddMore ? '<div class="photo-limit-note">Maximum 5 photos per listing</div>' : `<div class="photo-limit-note">${5-images.length} more photo${5-images.length!==1?'s':''} can be added</div>`
+
     card.innerHTML=`
-      <div class="photo-ph" style="background:#0D0A06;">${img}</div>
+      <div class="photo-thumbnails">${thumbsHtml}${addMoreHtml}</div>
+      ${limitNote}
       <div class="photo-body">
         <div style="display:flex;gap:8px;margin-bottom:8px;">
-          <div style="flex:1;background:var(--color-background-secondary);border-radius:6px;padding:6px 8px;text-align:center;">
-            <div style="font-size:10px;color:var(--color-text-secondary);margin-bottom:1px;">Views</div>
+          <div style="flex:1;background:rgba(255,255,255,0.05);border-radius:6px;padding:6px 8px;text-align:center;">
+            <div style="font-size:10px;color:#9A8A7A;margin-bottom:1px;">Views</div>
             <div style="font-size:15px;font-weight:500;">${views}</div>
           </div>
-          <div style="flex:1;background:var(--color-background-secondary);border-radius:6px;padding:6px 8px;text-align:center;">
-            <div style="font-size:10px;color:var(--color-text-secondary);margin-bottom:1px;">Days left</div>
+          <div style="flex:1;background:rgba(255,255,255,0.05);border-radius:6px;padding:6px 8px;text-align:center;">
+            <div style="font-size:10px;color:#9A8A7A;margin-bottom:1px;">Days left</div>
             <div style="font-size:15px;font-weight:500;color:${daysColor};">${days}</div>
           </div>
         </div>
-        ${missingPrice ? '<div style="background:#FAEEDA;border:0.5px solid #FAC775;border-radius:6px;padding:6px 9px;font-size:11px;color:#854F0B;margin-bottom:6px;">⚠️ An asking price is required for dealers to see your item</div>' : ''}
+        ${missingPrice?'<div style="background:rgba(226,75,74,0.1);border:0.5px solid #E24B4A;border-radius:6px;padding:6px 9px;font-size:11px;color:#E24B4A;margin-bottom:6px;">⚠️ An asking price is required for dealers to see your item</div>':''}
         <input type="text" class="price-in" placeholder="Asking price (required e.g. $50)" value="${p.price||''}" style="${missingPrice?'border-color:#E24B4A;':''}">
-        <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--color-text-secondary);margin-bottom:7px;cursor:pointer;padding:5px 0;">
+        <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:#9A8A7A;margin-bottom:7px;cursor:pointer;padding:5px 0;">
           <input type="checkbox" class="neg-in" ${isNeg?'checked':''} style="width:15px;height:15px;accent-color:#C9A84C;cursor:pointer;">
           Price is negotiable
         </label>
         <textarea class="desc-in" placeholder="Describe the item...">${p.description||''}</textarea>
-        <div class="photo-actions"><button class="btn danger sm del-btn">Delete</button></div>
+        <div class="photo-actions"><button class="btn danger sm del-btn">Delete listing</button></div>
         <div class="payment-row" id="pay-row-${p.id}"></div>
       </div>`
-    const sellerPhImg = card.querySelector('.photo-ph img')
-    if(sellerPhImg){ sellerPhImg.style.cursor='zoom-in'; sellerPhImg.addEventListener('click',()=>openLightbox(p.image_url)) }
 
-    // Add payment buttons based on settings
-    const payRow = card.querySelector('.payment-row')
-    if(payRow && SETTINGS.republish_enabled !== 'false'){
-      const isPromoted = p.is_promoted && p.promoted_until && new Date(p.promoted_until) > new Date()
-      const repBtn = document.createElement('button')
-      repBtn.className='pay-btn republish'
-      repBtn.innerHTML=`🔄 Republish $${SETTINGS.republish_price||'5.00'}`
-      repBtn.title=`Reset your listing clock for another ${SETTINGS.republish_days||45} days`
-      repBtn.addEventListener('click',()=>startPayment(p.id,'republish'))
-      payRow.appendChild(repBtn)
-
-      if(SETTINGS.promote_enabled !== 'false'){
-        const proBtn = document.createElement('button')
-        proBtn.className='pay-btn promote'
-        proBtn.innerHTML= isPromoted ? `⭐ Promoted` : `⭐ Promote $${SETTINGS.promote_price||'10.00'}`
-        proBtn.disabled = isPromoted
-        proBtn.title = isPromoted ? `Promoted until ${new Date(p.promoted_until).toLocaleDateString()}` : `Appear at the top of the dealer feed for ${SETTINGS.promote_days||7} days`
-        if(!isPromoted) proBtn.addEventListener('click',()=>startPayment(p.id,'promote'))
-        payRow.appendChild(proBtn)
-      }
-    }
-    // Price - required validation
+    // Price change
     card.querySelector('.price-in').addEventListener('change',async e=>{
-      const val = e.target.value.trim()
-      if(!val){
-        e.target.style.borderColor='#E24B4A'
-        window.toast('Please add an asking price.')
-        return
-      }
+      const val=e.target.value.trim()
+      if(!val){e.target.style.borderColor='#E24B4A';window.toast('Please add an asking price.');return}
       e.target.style.borderColor=''
       await sb.from('submissions').update({price:val}).eq('id',p.id)
-      p.price=val
-      renderSeller()
+      p.price=val;renderSeller()
     })
-    // Negotiable toggle
+    // Negotiable
     card.querySelector('.neg-in').addEventListener('change',async e=>{
       await sb.from('submissions').update({negotiable:e.target.checked}).eq('id',p.id)
       p.negotiable=e.target.checked
       window.toast(e.target.checked?'Marked as negotiable':'Marked as firm price')
     })
+    // Description
     card.querySelector('.desc-in').addEventListener('change',async e=>{
       await sb.from('submissions').update({description:e.target.value}).eq('id',p.id)
       p.description=e.target.value
     })
-    const delBtn = card.querySelector('.del-btn')
-    delBtn.dataset.pid = p.id
-    delBtn.addEventListener('click', function(){
+    // Delete listing
+    const delBtn=card.querySelector('.del-btn')
+    delBtn.dataset.pid=p.id
+    delBtn.addEventListener('click',function(){
       if(this.dataset.confirm==='yes'){
         delPhoto(this.dataset.pid)
       } else {
-        this.dataset.confirm='yes'
-        this.textContent='Tap again to confirm'
-        this.style.background='#E24B4A'
-        this.style.color='#fff'
-        this.style.borderColor='#E24B4A'
-        const btn = this
-        setTimeout(()=>{
-          btn.dataset.confirm=''
-          btn.textContent='Delete'
-          btn.style.background=''
-          btn.style.color=''
-          btn.style.borderColor=''
-        }, 3000)
+        this.dataset.confirm='yes';this.textContent='Tap again to confirm'
+        this.style.background='#E24B4A';this.style.color='#fff';this.style.borderColor='#E24B4A'
+        const btn=this
+        setTimeout(()=>{btn.dataset.confirm='';btn.textContent='Delete listing';btn.style.background='';btn.style.color='';btn.style.borderColor=''},3000)
       }
     })
+
+    // Payment buttons
+    const payRow=card.querySelector('.payment-row')
+    if(payRow&&SETTINGS.republish_enabled!=='false'){
+      const isPromoted=p.is_promoted&&p.promoted_until&&new Date(p.promoted_until)>new Date()
+      const repBtn=document.createElement('button');repBtn.className='pay-btn republish'
+      repBtn.innerHTML=`🔄 Republish $${SETTINGS.republish_price||'5.00'}`
+      repBtn.addEventListener('click',()=>startPayment(p.id,'republish'))
+      payRow.appendChild(repBtn)
+      if(SETTINGS.promote_enabled!=='false'){
+        const proBtn=document.createElement('button');proBtn.className='pay-btn promote'
+        proBtn.innerHTML=isPromoted?'⭐ Promoted':`⭐ Promote $${SETTINGS.promote_price||'10.00'}`
+        proBtn.disabled=isPromoted
+        if(!isPromoted)proBtn.addEventListener('click',()=>startPayment(p.id,'promote'))
+        payRow.appendChild(proBtn)
+      }
+    }
+
     grid.appendChild(card)
   })
+}
+
+
+// Delete a single photo from a listing
+window.delSinglePhoto = async function(imageId, submissionId, totalImages){
+  if(totalImages <= 1){
+    window.toast('Cannot delete the only photo. Delete the listing instead.')
+    return
+  }
+  if(!confirm('Delete this photo from your listing?')) return
+  const{error}=await sb.from('submission_images').delete().eq('id',imageId)
+  if(error){window.toast('Failed to delete photo.');return}
+  // Remove from local state
+  if(APP.sellerImages&&APP.sellerImages[submissionId]){
+    APP.sellerImages[submissionId]=APP.sellerImages[submissionId].filter(img=>img.id!==imageId)
+  }
+  window.toast('Photo removed.')
+  renderSeller()
+}
+
+// Add more photos to an existing listing
+window.addPhotosToListing = async function(submissionId, input){
+  const files=Array.from(input.files)
+  if(!files.length)return
+  const existing=(APP.sellerImages&&APP.sellerImages[submissionId])||[]
+  if(existing.length + files.length > 5){
+    window.toast(`You can only add ${5-existing.length} more photo${5-existing.length!==1?'s':''} to this listing.`)
+    input.value=''
+    return
+  }
+  window.toast(`Uploading ${files.length} photo${files.length>1?'s':''}...`)
+  try{
+    for(let i=0;i<files.length;i++){
+      const{url,publicId}=await uploadImg(files[i],'submissions')
+      const{data:img}=await sb.from('submission_images').insert({
+        submission_id:submissionId,
+        image_url:url,
+        image_public_id:publicId,
+        sort_order:existing.length+i
+      }).select().single()
+      if(img){
+        if(!APP.sellerImages)APP.sellerImages={}
+        if(!APP.sellerImages[submissionId])APP.sellerImages[submissionId]=[]
+        APP.sellerImages[submissionId].push(img)
+      }
+    }
+    window.toast(`${files.length} photo${files.length>1?'s':''} added!`)
+    input.value=''
+    renderSeller()
+  }catch(err){
+    window.toast('Upload failed — please try again.')
+  }
 }
 
 window.deletePhoto = async function delPhoto(id){
@@ -2100,11 +2212,11 @@ function showPriceModal(){
   el('price-modal-negotiable').checked=false
   el('price-modal-error').style.display='none'
   el('price-modal-price').style.borderColor=''
-  el('price-modal-submit-btn').textContent='Upload & submit item'
+  el('price-modal-submit-btn').textContent='Upload & create listing'
   el('price-modal-submit-btn').disabled=false
 
   // Update title and counter
-  el('price-modal-title').textContent = total > 1 ? `Item ${current} of ${total}` : 'Add details before submitting'
+  el('price-modal-title').textContent = total > 1 ? `Add listing details (${total} photos)` : 'Add details before submitting'
   el('price-modal-counter').textContent = total > 1 ? `${total - current} more to go after this` : file.name
   el('price-modal-filename').textContent = file.name
 
@@ -2134,7 +2246,6 @@ window.submitWithPrice = async function(){
   const negotiable = el('price-modal-negotiable').checked
   const errEl = el('price-modal-error')
 
-  // Validate price
   if(!price){
     errEl.style.display='block'
     el('price-modal-price').style.borderColor='#E24B4A'
@@ -2149,42 +2260,54 @@ window.submitWithPrice = async function(){
   btn.disabled=true
   btn.innerHTML='<span class="spinner"></span>Uploading...'
 
-  const file = PENDING.files[PENDING.index]
-
   try{
-    const{url,publicId}=await uploadImg(file,'submissions')
-    const{data}=await sb.from('submissions').insert({
+    // Create one submission for all selected files
+    const{data:sub}=await sb.from('submissions').insert({
       seller_id:APP.profile.id,
-      image_url:url,
-      image_public_id:publicId,
+      image_url: null, // images stored in submission_images
       price,
       description:desc,
       negotiable,
       is_new:true
     }).select().single()
-    if(data) APP.submissions.unshift(data)
-    window.toast('Item submitted!')
+
+    if(!sub) throw new Error('Failed to create submission')
+
+    // Upload all files and insert into submission_images
+    const total = PENDING.files.length
+    for(let i=0; i<total; i++){
+      btn.innerHTML=`<span class="spinner"></span>Uploading photo ${i+1} of ${total}...`
+      const{url,publicId}=await uploadImg(PENDING.files[i],'submissions')
+      await sb.from('submission_images').insert({
+        submission_id: sub.id,
+        image_url: url,
+        image_public_id: publicId,
+        sort_order: i
+      })
+      // Set first image as thumbnail on submission for backwards compat
+      if(i===0){
+        await sb.from('submissions').update({image_url:url,image_public_id:publicId}).eq('id',sub.id)
+        sub.image_url = url
+      }
+    }
+
+    APP.submissions.unshift(sub)
+    window.toast(`Listing submitted with ${total} photo${total>1?'s':''}!`)
+
   }catch(err){
     window.toast('Upload failed — please try again.')
     btn.disabled=false
-    btn.textContent='Upload & submit item'
+    btn.textContent='Upload & submit listing'
     return
   }
 
-  // Close modal and move to next file or finish
   el('price-modal').classList.remove('open')
-  PENDING.index++
+  PENDING.files=[]
+  PENDING.index=0
 
-  if(PENDING.index < PENDING.files.length){
-    // Short delay then show next
-    setTimeout(showPriceModal, 400)
-  } else {
-    // All done
-    try{await sendEdgeEmail('new_submission',{seller_name:APP.profile.name,count:PENDING.files.length})}catch(e){}
-    PENDING.files=[]
-    PENDING.index=0
-    renderSeller()
-  }
+  try{await sendEdgeEmail('new_submission',{seller_name:APP.profile.name,count:1})}catch(e){}
+  await loadSellerSubmissions()
+  renderSeller()
 }
 
 // detect mobile and update upload hint
@@ -2236,16 +2359,20 @@ async function loadDealer(){
 }
 
 async function loadDealerData(){
-  const[s,sel]=await Promise.all([
-    sb.from('submissions').select('*, profiles:seller_id(id,name,email,phone,address,notes,avatar_url)').order('created_at',{ascending:false}),
-    sb.from('profiles').select('*').eq('type','seller').eq('hidden',false).order('created_at',{ascending:false})
+  const[s,sel,imgs]=await Promise.all([
+    sb.from('submissions').select('*, profiles:seller_id(id,name,email,phone,address,notes,avatar_url,state)').order('created_at',{ascending:false}),
+    sb.from('profiles').select('*').eq('type','seller').eq('hidden',false).order('created_at',{ascending:false}),
+    sb.from('submission_images').select('*').order('sort_order',{ascending:true})
   ])
-  // Filter out submissions from hidden sellers
-  const hiddenIds = new Set()
   APP.sellers=(sel.data||[]).filter(s=>!s.hidden)
+  APP.submissionImages={}
+  ;(imgs.data||[]).forEach(img=>{
+    if(!APP.submissionImages[img.submission_id])APP.submissionImages[img.submission_id]=[]
+    APP.submissionImages[img.submission_id].push(img)
+  })
   APP.submissions=(s.data||[]).filter(p=>{
-    const seller = p.profiles
-    return !seller || !seller.hidden
+    const seller=p.profiles
+    return !seller||!seller.hidden
   })
   loadFavorites()
   updateFavCount()
@@ -2425,11 +2552,14 @@ function openModal(pid){
   el('modal-seller-notes').textContent=s?(s.notes||'None'):'—'
   el('modal-seller-location').textContent=s&&s.address?s.address.split(',').slice(1).join(',').trim():'—'
   const imgWrap=el('modal-img-wrap')
-  if(p.image_url){
-    imgWrap.innerHTML=`<img src="${imgFull(p.image_url)}" alt="item" style="max-width:100%;max-height:360px;object-fit:contain;display:block;margin:auto;cursor:zoom-in;" title="Click to zoom">`
-    imgWrap.querySelector('img').addEventListener('click',()=>openLightbox(p.image_url))
+  const modalImages = (APP.submissionImages&&APP.submissionImages[p.id]) || (p.image_url?[{image_url:p.image_url}]:[])
+  if(modalImages.length > 1){
+    buildCarousel(imgWrap, modalImages)
+  } else if(modalImages.length === 1){
+    imgWrap.innerHTML=`<img src="${imgFull(modalImages[0].image_url)}" alt="item" style="max-width:100%;max-height:360px;object-fit:contain;display:block;margin:auto;cursor:zoom-in;" title="Click to zoom">`
+    imgWrap.querySelector('img').addEventListener('click',()=>openLightbox(modalImages[0].image_url))
   } else {
-    imgWrap.innerHTML='<div class="photo-ph">📷</div>'
+    imgWrap.innerHTML='<div class="photo-ph" style="height:200px;display:flex;align-items:center;justify-content:center;font-size:48px;">📷</div>'
   }
   av(el('modal-seller-avatar'),s)
   // Update favorite button in modal
@@ -2457,6 +2587,59 @@ window.modalToggleFav = function(){
     favBtn.textContent = isFav ? '♥ Remove from favorites' : '♡ Add to favorites'
     favBtn.style.color = isFav ? '#E24B4A' : ''
     favBtn.style.borderColor = isFav ? '#E24B4A' : ''
+  }
+}
+
+// Build carousel for modal
+function buildCarousel(wrap, images){
+  let current = 0
+  const update = () => {
+    const track = wrap.querySelector('.carousel-track')
+    const dots = wrap.querySelectorAll('.carousel-dot')
+    if(track) track.style.transform = `translateX(-${current * 100}%)`
+    dots.forEach((d,i) => d.classList.toggle('active', i===current))
+  }
+  const slides = images.map((img,i) => `
+    <div class="carousel-slide" style="height:320px;">
+      <img src="${imgFull(img.image_url)}" alt="item ${i+1}" style="width:100%;height:100%;object-fit:contain;cursor:zoom-in;" data-url="${img.image_url}">
+    </div>`).join('')
+  const dots = images.map((_,i) => `<div class="carousel-dot ${i===0?'active':''}"></div>`).join('')
+  wrap.innerHTML = `
+    <div class="carousel" style="height:320px;">
+      <div class="carousel-track">${slides}</div>
+      ${images.length>1?`
+      <button class="carousel-btn prev">&#8249;</button>
+      <button class="carousel-btn next">&#8250;</button>
+      <div class="carousel-dots">${dots}</div>`:''}
+    </div>`
+  // Add click handlers
+  wrap.querySelectorAll('.carousel-slide img').forEach(img=>{
+    img.addEventListener('click',()=>openLightbox(img.dataset.url))
+  })
+  if(images.length>1){
+    wrap.querySelector('.prev').addEventListener('click',e=>{
+      e.stopPropagation()
+      current = (current - 1 + images.length) % images.length
+      update()
+    })
+    wrap.querySelector('.next').addEventListener('click',e=>{
+      e.stopPropagation()
+      current = (current + 1) % images.length
+      update()
+    })
+    wrap.querySelectorAll('.carousel-dot').forEach((dot,i)=>{
+      dot.addEventListener('click',e=>{ e.stopPropagation(); current=i; update() })
+    })
+    // Touch swipe support
+    let touchStartX = 0
+    wrap.addEventListener('touchstart',e=>{ touchStartX=e.touches[0].clientX }, {passive:true})
+    wrap.addEventListener('touchend',e=>{
+      const diff = touchStartX - e.changedTouches[0].clientX
+      if(Math.abs(diff) > 40){
+        current = diff > 0 ? (current+1)%images.length : (current-1+images.length)%images.length
+        update()
+      }
+    }, {passive:true})
   }
 }
 
