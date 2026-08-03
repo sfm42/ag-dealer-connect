@@ -667,6 +667,16 @@ tr:last-child td { border-bottom: none; }
 .add-more-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .photo-limit-note { font-size: 11px; color: #7A6A5A; padding: 0 10px 6px; }
 
+
+/* SOCIAL SHARE BUTTONS */
+.share-row { display:flex; gap:6px; margin-top:6px; }
+.share-btn { flex:1; padding:7px 8px; border-radius:8px; border:none; font-size:12px; font-weight:500; cursor:pointer; font-family:inherit; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:5px; }
+.share-btn.twitter { background:#000; color:#fff; }
+.share-btn.twitter:hover { background:#333; box-shadow:0 0 10px rgba(255,255,255,0.15); }
+.share-btn.facebook { background:#1877F2; color:#fff; }
+.share-btn.facebook:hover { background:#0d6efd; box-shadow:0 0 10px rgba(24,119,242,0.4); }
+.share-btn svg { width:14px; height:14px; flex-shrink:0; }
+
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .upload-zone.dragging{border-color:#1A1408;background:#FBF7EC20;}
@@ -1707,6 +1717,35 @@ function renderFavorites(){
       </div>`
     card.querySelector('.fav-btn').addEventListener('click',e=>{e.stopPropagation();toggleFavorite(p.id)})
     card.addEventListener('click',()=>openModal(p.id))
+    // Add share buttons
+    const shareRow = card.querySelector('.share-row')
+    if(shareRow){
+      const itemDesc = p.description ? p.description.substring(0,80) + (p.description.length>80?'...':'') : 'Check out this item'
+      const itemPrice = p.price || ''
+      const siteUrl = 'https://submit.antykehighstreet.com'
+
+      // X (Twitter) share
+      const tweetText = encodeURIComponent(`🏺 For sale: ${itemDesc}${itemPrice?' — '+itemPrice:''}
+
+Available on Dealer Connect by Antyke High Street
+${siteUrl}
+#antiques #forsale #antiquedealers`)
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}`
+
+      // Facebook share
+      const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}&quote=${encodeURIComponent('🏺 For sale: '+itemDesc+(itemPrice?' — '+itemPrice:'')+' — Available on Dealer Connect by Antyke High Street')}`
+
+      shareRow.innerHTML = `
+        <button class="share-btn twitter" onclick="window.open('${twitterUrl}','_blank','width=550,height=420')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Share on X
+        </button>
+        <button class="share-btn facebook" onclick="window.open('${fbUrl}','_blank','width=580,height=400')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Share on Facebook
+        </button>`
+    }
+
     grid.appendChild(card)
   })
 }
@@ -2059,6 +2098,7 @@ function renderSeller(){
         <textarea class="desc-in" placeholder="Describe the item...">${p.description||''}</textarea>
         <div class="photo-actions"><button class="btn danger sm del-btn">Delete listing</button></div>
         <div class="payment-row" id="pay-row-${p.id}"></div>
+        <div class="share-row" id="share-row-${p.id}"></div>
       </div>`
 
     // Price change
@@ -2109,6 +2149,35 @@ function renderSeller(){
         if(!isPromoted)proBtn.addEventListener('click',()=>startPayment(p.id,'promote'))
         payRow.appendChild(proBtn)
       }
+    }
+
+    // Add share buttons
+    const shareRow = card.querySelector('.share-row')
+    if(shareRow){
+      const itemDesc = p.description ? p.description.substring(0,80) + (p.description.length>80?'...':'') : 'Check out this item'
+      const itemPrice = p.price || ''
+      const siteUrl = 'https://submit.antykehighstreet.com'
+
+      // X (Twitter) share
+      const tweetText = encodeURIComponent(`🏺 For sale: ${itemDesc}${itemPrice?' — '+itemPrice:''}
+
+Available on Dealer Connect by Antyke High Street
+${siteUrl}
+#antiques #forsale #antiquedealers`)
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}`
+
+      // Facebook share
+      const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}&quote=${encodeURIComponent('🏺 For sale: '+itemDesc+(itemPrice?' — '+itemPrice:'')+' — Available on Dealer Connect by Antyke High Street')}`
+
+      shareRow.innerHTML = `
+        <button class="share-btn twitter" onclick="window.open('${twitterUrl}','_blank','width=550,height=420')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Share on X
+        </button>
+        <button class="share-btn facebook" onclick="window.open('${fbUrl}','_blank','width=580,height=400')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Share on Facebook
+        </button>`
     }
 
     grid.appendChild(card)
@@ -2463,6 +2532,35 @@ function renderDealerPhotos(){
       toggleFavorite(p.id)
     })
     card.addEventListener('click',()=>openModal(p.id))
+    // Add share buttons
+    const shareRow = card.querySelector('.share-row')
+    if(shareRow){
+      const itemDesc = p.description ? p.description.substring(0,80) + (p.description.length>80?'...':'') : 'Check out this item'
+      const itemPrice = p.price || ''
+      const siteUrl = 'https://submit.antykehighstreet.com'
+
+      // X (Twitter) share
+      const tweetText = encodeURIComponent(`🏺 For sale: ${itemDesc}${itemPrice?' — '+itemPrice:''}
+
+Available on Dealer Connect by Antyke High Street
+${siteUrl}
+#antiques #forsale #antiquedealers`)
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}`
+
+      // Facebook share
+      const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}&quote=${encodeURIComponent('🏺 For sale: '+itemDesc+(itemPrice?' — '+itemPrice:'')+' — Available on Dealer Connect by Antyke High Street')}`
+
+      shareRow.innerHTML = `
+        <button class="share-btn twitter" onclick="window.open('${twitterUrl}','_blank','width=550,height=420')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Share on X
+        </button>
+        <button class="share-btn facebook" onclick="window.open('${fbUrl}','_blank','width=580,height=400')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Share on Facebook
+        </button>`
+    }
+
     grid.appendChild(card)
   })
 }
@@ -2805,6 +2903,35 @@ function renderAdminPhotos(){
         <div class="seller-tag" style="margin-top:4px;">By ${sName} &middot; ${ago(p.created_at)}</div>
       </div>`
     card.addEventListener('click',()=>openModal(p.id))
+    // Add share buttons
+    const shareRow = card.querySelector('.share-row')
+    if(shareRow){
+      const itemDesc = p.description ? p.description.substring(0,80) + (p.description.length>80?'...':'') : 'Check out this item'
+      const itemPrice = p.price || ''
+      const siteUrl = 'https://submit.antykehighstreet.com'
+
+      // X (Twitter) share
+      const tweetText = encodeURIComponent(`🏺 For sale: ${itemDesc}${itemPrice?' — '+itemPrice:''}
+
+Available on Dealer Connect by Antyke High Street
+${siteUrl}
+#antiques #forsale #antiquedealers`)
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}`
+
+      // Facebook share
+      const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}&quote=${encodeURIComponent('🏺 For sale: '+itemDesc+(itemPrice?' — '+itemPrice:'')+' — Available on Dealer Connect by Antyke High Street')}`
+
+      shareRow.innerHTML = `
+        <button class="share-btn twitter" onclick="window.open('${twitterUrl}','_blank','width=550,height=420')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Share on X
+        </button>
+        <button class="share-btn facebook" onclick="window.open('${fbUrl}','_blank','width=580,height=400')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Share on Facebook
+        </button>`
+    }
+
     grid.appendChild(card)
   })
 }
