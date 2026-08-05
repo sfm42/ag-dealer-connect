@@ -921,6 +921,7 @@ tr:last-child td { border-bottom: none; }
 <option value="WV">West Virginia</option>
 <option value="WI">Wisconsin</option>
 <option value="WY">Wyoming</option></select></div>
+      </div>
       <div id="signup-dealer" style="display:none">
         <div style="background:rgba(201,168,76,0.1);border:0.5px solid rgba(201,168,76,0.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#C9A84C;margin-bottom:1.25rem;line-height:1.5;">
           🏛️ <strong>Dealer accounts require admin approval.</strong> Once you submit your application, the Antyke High Street team will review and activate your account before you can access seller submissions.
@@ -1861,20 +1862,20 @@ window.switchSignupType = function(type){
     activeCard.style.background='rgba(201,168,76,0.1)'
     activeCard.style.boxShadow='0 0 22px rgba(201,168,76,0.45), 0 0 6px rgba(201,168,76,0.2), inset 0 0 15px rgba(201,168,76,0.06)'
     activeCard.style.transform='scale(1.02)'
-    activeCard.querySelector('div:nth-child(2)').style.color='#C9A84C'
-    activeCard.querySelector('div:nth-child(2)').style.fontWeight='600'
-    activeCard.querySelector('div:nth-child(2)').style.textShadow='0 0 10px rgba(201,168,76,0.4)'
-    activeCard.querySelector('div:nth-child(3)').style.color='#9A8A7A'
+    const at2=activeCard.querySelector('div:nth-child(2)')
+    const at3=activeCard.querySelector('div:nth-child(3)')
+    if(at2){at2.style.color='#C9A84C';at2.style.fontWeight='600';at2.style.textShadow='0 0 10px rgba(201,168,76,0.4)'}
+    if(at3)at3.style.color='#9A8A7A'
 
     // Inactive - dimmed
     inactiveCard.style.border='2px solid rgba(201,168,76,0.15)'
     inactiveCard.style.background='rgba(201,168,76,0.02)'
     inactiveCard.style.boxShadow='none'
     inactiveCard.style.transform='scale(1)'
-    inactiveCard.querySelector('div:nth-child(2)').style.color='#5A4A3A'
-    inactiveCard.querySelector('div:nth-child(2)').style.fontWeight='500'
-    inactiveCard.querySelector('div:nth-child(2)').style.textShadow='none'
-    inactiveCard.querySelector('div:nth-child(3)').style.color='#4A3A2A'
+    const in2=inactiveCard.querySelector('div:nth-child(2)')
+    const in3=inactiveCard.querySelector('div:nth-child(3)')
+    if(in2){in2.style.color='#5A4A3A';in2.style.fontWeight='500';in2.style.textShadow='none'}
+    if(in3)in3.style.color='#4A3A2A'
   }
 }
 
