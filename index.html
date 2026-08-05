@@ -40,7 +40,7 @@ body { font-family: system-ui, sans-serif; background: #0D0A06; color: #D4C8B8; 
 .card .card-sub { font-size: 13px; color: #C9A84C; margin-bottom: 1.5rem; font-style: italic; }
 .form-group { margin-bottom: 1rem; }
 .form-group label { display: block; font-size: 13px; color: #9A8A7A; margin-bottom: 4px; }
-.form-group input, .form-group textarea { width: 100%; padding: 8px 12px; border: 0.5px solid rgba(0,0,0,0.25); border-radius: 8px; font-size: 14px; background: #fff; color: #D4C8B8; outline: none; font-family: inherit; }
+.form-group input, .form-group textarea { width: 100%; padding: 8px 12px; border: 0.5px solid rgba(201,168,76,0.25); border-radius: 8px; font-size: 14px; background: #201A0A; color: #D4C8B8; outline: none; font-family: inherit; }
 .form-group input:focus, .form-group textarea:focus { border-color: #C9A84C; }
 .form-group textarea { resize: vertical; min-height: 80px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -922,12 +922,12 @@ tr:last-child td { border-bottom: none; }
 <option value="WI">Wisconsin</option>
 <option value="WY">Wyoming</option></select></div>
       <div id="signup-dealer" style="display:none">
-        <div style="background:#FAEEDA;border:0.5px solid #FAC775;border-radius:8px;padding:10px 14px;font-size:13px;color:#854F0B;margin-bottom:1.25rem;line-height:1.5;">
-          🏛️ <strong>Dealer accounts require admin approval.</strong> Once you submit your application, the AG team will review and activate your account before you can access seller submissions.
+        <div style="background:rgba(201,168,76,0.1);border:0.5px solid rgba(201,168,76,0.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#C9A84C;margin-bottom:1.25rem;line-height:1.5;">
+          🏛️ <strong>Dealer accounts require admin approval.</strong> Once you submit your application, the Antyke High Street team will review and activate your account before you can access seller submissions.
         </div>
         <div style="display:flex;justify-content:center;margin-bottom:1.25rem;">
           <label class="avatar-upload-wrap" for="d-avatar-input">
-            <div class="avatar avatar-lg" id="d-avatar-preview" style="border:0.5px solid rgba(0,0,0,0.2);">📷</div>
+            <div class="avatar avatar-lg" id="d-avatar-preview" style="border:0.5px solid rgba(201,168,76,0.3);">📷</div>
             <div class="avatar-edit-badge">✏</div>
             <input type="file" id="d-avatar-input" accept="image/*" onchange="previewAvatar('d-avatar-preview',this)">
           </label>
@@ -1838,6 +1838,7 @@ window.showScreen = function(id){
   el(id).classList.add('active')
   window.scrollTo(0,0)
   if(id==='screen-home') loadLandingPage()
+  if(id==='screen-signup') setTimeout(()=>window.switchSignupType&&window.switchSignupType('seller'),50)
 }
 window.toast = function(msg){
   const t=el('toast');t.textContent=msg;t.classList.add('show')
