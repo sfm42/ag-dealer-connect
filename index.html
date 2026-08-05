@@ -737,9 +737,8 @@ tr:last-child td { border-bottom: none; }
   <!-- LIVE LISTINGS -->
   <div style="padding:1.5rem;background:#0D0A06;">
     <div style="max-width:700px;margin:0 auto;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div style="margin-bottom:1rem;">
         <h2 style="font-size:15px;font-weight:600;color:#C9A84C;letter-spacing:0.04em;">&#11088; Items listed right now</h2>
-        <span id="landing-stats" style="font-size:12px;color:#7A6A5A;"></span>
       </div>
       <div id="landing-photos" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;"></div>
       <p style="font-size:12px;color:#5A4A3A;text-align:center;margin-top:10px;">Photos shown are real items currently listed by sellers</p>
@@ -3568,18 +3567,31 @@ document.addEventListener('keydown', e=>{
 // ---- LANDING PAGE ----
 async function loadLandingPage(){
   try{
-    // Load latest 4 submissions with images (no seller names)
-    const{data:subs}=await sb.from('submissions')
-      .select('id,image_url,price,description')
-      .not('image_url','is',null)
+    // Load 3 most recent submissions from last 30 days
+    const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000).toISOString()
+    // Fetch submissions - include those with null image_url (they use submission_images table)
+    const{data:allSubs}=await sb.from('submissions')
+      .select('id,image_url,price,description,created_at')
+      .gte('created_at', thirtyDaysAgo)
       .order('created_at',{ascending:false})
-      .limit(8)
+      .limit(20)
+
+    // For those without image_url fetch from submission_images
+    let subs = []
+    for(const sub of (allSubs||[])){
+      if(sub.image_url){
+        subs.push(sub)
+      } else {
+        const{data:imgs}=await sb.from('submission_images').select('image_url').eq('submission_id',sub.id).limit(1)
+        if(imgs&&imgs.length) subs.push({...sub, image_url:imgs[0].image_url})
+      }
+      if(subs.length>=3) break
+    }
 
     const photosGrid=el('landing-photos')
     if(photosGrid&&subs&&subs.length){
-      // Filter to ones with images and take 4
-      const withImgs=subs.filter(s=>s.image_url).slice(0,4)
-      photosGrid.innerHTML=withImgs.map(s=>`
+      photosGrid.style.gridTemplateColumns='repeat(3,1fr)'
+      photosGrid.innerHTML=subs.map(s=>`
         <div style="border-radius:10px;overflow:hidden;border:0.5px solid rgba(201,168,76,0.2);background:#1A1408;cursor:pointer;" onclick="showScreen('screen-signup')">
           <div style="height:160px;overflow:hidden;">
             <img src="${imgThumb(s.image_url,400)}" alt="Listed item" style="width:100%;height:100%;object-fit:cover;" loading="lazy">
@@ -3589,16 +3601,9 @@ async function loadLandingPage(){
             <div style="font-size:11px;color:#7A6A5A;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.description||'Antique item'}</div>
           </div>
         </div>`).join('')
+    } else if(photosGrid){
+      photosGrid.style.display='none'
     }
-
-    // Load stats
-    const[{count:sellerCount},{count:dealerCount}]=await Promise.all([
-      sb.from('profiles').select('*',{count:'exact',head:true}).eq('type','seller').eq('hidden',false),
-      sb.from('profiles').select('*',{count:'exact',head:true}).eq('type','dealer').eq('dealer_status','approved')
-    ])
-
-    const statsEl=el('landing-stats')
-    if(statsEl) statsEl.textContent=`${sellerCount||0} sellers · ${dealerCount||0} approved dealers`
 
   }catch(e){
     console.warn('Landing page load error:', e)
