@@ -3569,29 +3569,25 @@ async function loadLandingPage(){
   try{
     // Load 3 most recent submissions from last 30 days
     const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000).toISOString()
-    // Fetch submissions - include those with null image_url (they use submission_images table)
     const{data:allSubs}=await sb.from('submissions')
-      .select('id,image_url,price,description,created_at')
+      .select('id,image_url,price,description')
+      .not('image_url','is',null)
       .gte('created_at', thirtyDaysAgo)
       .order('created_at',{ascending:false})
-      .limit(20)
+      .limit(50)
 
-    // For those without image_url fetch from submission_images
-    let subs = []
-    for(const sub of (allSubs||[])){
-      if(sub.image_url){
-        subs.push(sub)
-      } else {
-        const{data:imgs}=await sb.from('submission_images').select('image_url').eq('submission_id',sub.id).limit(1)
-        if(imgs&&imgs.length) subs.push({...sub, image_url:imgs[0].image_url})
-      }
-      if(subs.length>=3) break
+    // Shuffle randomly so each visit shows different items
+    const subs = (allSubs||[])
+    for(let i=subs.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [subs[i],subs[j]]=[subs[j],subs[i]]
     }
+    const topThree = subs.slice(0,3)
 
     const photosGrid=el('landing-photos')
-    if(photosGrid&&subs&&subs.length){
+    if(photosGrid&&topThree.length){
       photosGrid.style.gridTemplateColumns='repeat(3,1fr)'
-      photosGrid.innerHTML=subs.map(s=>`
+      photosGrid.innerHTML=topThree.map(s=>`
         <div style="border-radius:10px;overflow:hidden;border:0.5px solid rgba(201,168,76,0.2);background:#1A1408;cursor:pointer;" onclick="showScreen('screen-signup')">
           <div style="height:160px;overflow:hidden;">
             <img src="${imgThumb(s.image_url,400)}" alt="Listed item" style="width:100%;height:100%;object-fit:cover;" loading="lazy">
